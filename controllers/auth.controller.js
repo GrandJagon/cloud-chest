@@ -34,7 +34,14 @@ const registerPost = async (req, res) => {
 
         await user.save();
 
-        res.status(200).send('Registration successfull');
+        // Generating a signed token and sending it with the response
+        const accessToken = await signedToken(user._id, TokenType.access);
+        const refreshToken = await signedToken(user._id, TokenType.refresh);
+
+        // Adding the refresh token to the cache
+        await Cache.add(user._id.toString(), JSON.stringify(refreshToken));
+
+        return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
 
     } catch (err) {
         res.status(400).send(err);
