@@ -51,7 +51,7 @@ const compare = (string, hashObject) => {
     const salt = hashObject.salt;
     const hash = hashObject.hash;
 
-    const hashedString = _hasher(string, salt);
+    const hashedString = _saltHasher(string, salt);
 
     if (hashedString.hash !== hash) return false;
 

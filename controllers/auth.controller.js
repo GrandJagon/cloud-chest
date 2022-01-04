@@ -18,10 +18,9 @@ const registerPost = async (req, res) => {
     const emailExists = await User.findOne({ email: req.body.email });
     if (emailExists) return res.status(400).send(req.body.email + ': This email address is already in use');
 
-
     try {
         // Hashing the password with a salt of 32 random hexadecimal characters
-        const hashedPassword = saltHash(req.body.password, salt(process.env.SALT_LENGTH));
+        const hashedPassword = saltHash(req.body.password, salt(parseInt(process.env.SALT_LENGTH)));
 
         // Creating the user object and saving it in the database
         const user = new User({
@@ -41,7 +40,8 @@ const registerPost = async (req, res) => {
         return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
 
     } catch (err) {
-        res.status(400).send(err);
+        console.log(err.stack);
+        res.status(500).send(err.message);
     }
 };
 
