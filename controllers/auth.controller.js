@@ -18,8 +18,6 @@ const registerPost = async (req, res) => {
     const emailExists = await User.findOne({ email: req.body.email });
     if (emailExists) return res.status(400).send(req.body.email + ': This email address is already in use');
 
-    const usernameExists = await User.findOne({ username: req.body.username });
-    if (usernameExists) return res.status(400).send(usernameExists + ': This username is already in use');
 
     try {
         // Hashing the password with a salt of 32 random hexadecimal characters
@@ -28,7 +26,6 @@ const registerPost = async (req, res) => {
         // Creating the user object and saving it in the database
         const user = new User({
             email: req.body.email,
-            username: req.body.username,
             password: hashedPassword
         });
 

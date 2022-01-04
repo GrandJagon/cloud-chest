@@ -16,7 +16,7 @@ const contentRoute = require('./routes/content.route');
 const userRoute = require('./routes/users.route');
 
 // Attaching Middlewares
-app.use(helmet);
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/storage', express.static('storage'));

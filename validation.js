@@ -7,7 +7,6 @@ const registerValidation = (data) => {
     // Defining the schema that the register data MUST follow
     const schema = {
         email: Joi.string().email().min(6).max(50).required(),
-        username: Joi.string().min(6).max(50).required(),
         password: Joi.string().min(6).required()
     };
 
@@ -21,7 +20,6 @@ const loginValidation = (data) => {
     const schema = {
         email: Joi.string().email().min(6).max(50).required(),
         password: Joi.string().min(6).required()
-
     }
 
     return Joi.validate(data, schema);
