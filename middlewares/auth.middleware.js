@@ -2,7 +2,7 @@ const { verifyAccessToken } = require('../services/tokens');
 const User = require('../models/User.model');
 
 // Middleware function to check if a user is authenticated before giving access to resources
-const checkAuthTrue = async (req, res, next) => {
+const checkAuth = async (req, res, next) => {
     const token = req.header('auth-token');
 
     if (!token) return res.status(401).send('Access denied');
@@ -28,7 +28,7 @@ const checkAuthTrue = async (req, res, next) => {
 
 // Lightweight middleware for testing purpose only
 // TO BE REPLACED WITH THE REAL ONE FOR PRODUCTION 
-const checkAuth = async (req, res, next) => {
+const checkAuthTest = async (req, res, next) => {
     const userId = req.header('userId');
     if (!userId) return res.status(401).send('User ID not provided');
 

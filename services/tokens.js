@@ -172,7 +172,7 @@ const verifyAccessToken = (token, isRefreshRequested) => {
     if (payload.iat > payload.exp) throw new TokenError('Access token invalid timestamps');
 
     // Check expiration time and returns error if a refreshed token is not required
-    if (payload.exp <= Date.now()) {
+    if ((payload.exp + 1) < Date.now()) {
         if (isRefreshRequested) return payload.sub;
 
         throw new TokenError('Access token expired');
@@ -180,7 +180,6 @@ const verifyAccessToken = (token, isRefreshRequested) => {
         // If token still valid and refreshed token required throws an error
         if (isRefreshRequested) throw new TokenError('Cannot refresh a token that has not expired');
     }
-
 
     // Returns the users ID if passes all the checks
     return payload.sub;

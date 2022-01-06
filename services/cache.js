@@ -29,7 +29,6 @@ class RedisCache {
         try {
             var result = await this.client.get(key);
             result = result.replaceAll('"', '');
-
             return result;
         } catch (err) {
             console.log(err);
