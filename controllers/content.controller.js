@@ -31,14 +31,17 @@ const writeContent = async (req, res) => {
 
         // For each stored file creating a new mongoose object and appending it to the album document
         for (const file of files) {
+            // Type inference
+            var filetype = file.filename.split('.').at(-1);
+
             newFiles.push(new File({
                 path: file.path,
                 size: file.size,
-                mimetype: file.mimetype
+                mimetype: filetype
             }));
 
             // Update the item map with the new file type
-            itemMap = _updateItemMap(itemMap, file, 'add');
+            itemMap = _updateItemMap(itemMap, file, filetype, 'add');
         };
 
         // Update the album object withint the database
@@ -127,14 +130,14 @@ const deleteContent = async (req, res) => {
 
 // Updates the album items stats with the newly added files
 // action can be 'add' or 'remove' in order to add or substract from the stats
-const _updateItemMap = (itemMap, file, action) => {
+const _updateItemMap = (itemMap, file, type, action) => {
 
     try {
         const amount = action == 'add' ? 1 : -1;
 
-        itemMap[file.mimetype] = Object.keys(itemMap).includes(file.mimetype) ? itemMap[file.mimetype] + amount : 1;
+        itemMap[type] = Object.keys(itemMap).includes(type) ? itemMap[type] + amount : 1;
 
-        if (itemMap[file.mimetype] < 1) delete itemMap[file.mimetype];
+        if (itemMap[type] < 1) delete itemMap[type];
 
         return itemMap;
 
