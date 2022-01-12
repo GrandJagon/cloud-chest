@@ -170,9 +170,13 @@ const verifyAccessToken = (token, isRefreshRequested) => {
     if (payload.iss !== process.env.TOKEN_ISSUER) throw new TokenError('Access token invalid issuer');
 
     if (payload.iat > payload.exp) throw new TokenError('Access token invalid timestamps');
+    console.log('---------------------------------------------');
+    console.log('PAYLOAD EXPIRATION TIME =>' + payload.exp);
+    console.log('DATE TIME NOW =>' + Date.now());
+    console.log('DIFFERENCE => ' + (payload.exp - Date.now()))
 
     // Check expiration time and returns error if a refreshed token is not required
-    if ((payload.exp + 1) < Date.now()) {
+    if ((payload.exp) < Date.now()) {
         if (isRefreshRequested) return payload.sub;
 
         throw new TokenError('Access token expired');
@@ -189,6 +193,8 @@ const verifyAccessToken = (token, isRefreshRequested) => {
 // Takes the refresh token and user ID as argument
 // To be called right after verifyAccessToken with ID returned by it
 const verifyRefreshToken = (token, userId) => {
+
+    console.log('Start refreshing token');
 
     // Verify the token structure, signature and decodes it 
     var checkedToken = _verifyIntegrity(token, TokenType.refresh);

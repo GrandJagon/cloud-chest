@@ -9,7 +9,7 @@ const getContent = async (req, res) => {
     const album = req.album;
 
     try {
-        return res.status(200).send(album.files);
+        return res.status(200).send({ 'content': album.files, 'message': 'success' });
 
     } catch (err) {
         return res.status(500).send(err.message);
@@ -59,9 +59,10 @@ const writeContent = async (req, res) => {
 
         // Returns the files object to client for storing the names in a correspondance table
         // That will allow they to not download each time the file they still have locally
-        return res.status(200).send('Files successfully added to the album ' + albumId);
+        return res.status(200).send({ 'uploaded': newFiles, 'message': 'success' });
 
     } catch (err) {
+        console.log(err.stack);
 
         return res.status(400).send(err.message);
     }

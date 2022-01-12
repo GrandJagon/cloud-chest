@@ -11,17 +11,20 @@ const fileSchema = new mongoose.Schema({
         type: Date
     },
     latitude: {
-        type: Decimal128
+        type: String
     },
     longitude: {
-        type: Decimal128
+        type: String
+    },
+    location: {
+        type: String
     },
     storageDate: {
-        type: Decimal128,
+        type: Date,
         default: Date.now()
     },
     size: {
-        type: Decimal128
+        type: Number
     },
     mimetype: {
         type: String

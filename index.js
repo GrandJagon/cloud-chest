@@ -30,9 +30,11 @@ app.use('/users', userRoute);
 
 
 // Starting to listen to port 3000 on local host
-app.listen(process.env.PORT, () => {
+var server = app.listen(process.env.PORT, () => {
     console.log('Listening to port ' + process.env.PORT);
 });
+
+
 
 
 

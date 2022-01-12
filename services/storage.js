@@ -17,10 +17,10 @@ const storage = multer.diskStorage({
     },
 });
 
-// Function responsible for storingfiles to the storage
+// Function responsible for storingfiles into the storage
 const storeFiles = multer({
     storage: storage
-}).array('files');
+}).any('files');
 
 // Deletes multiple files from from files path array
 // Should be called with a callback as argument in case of error

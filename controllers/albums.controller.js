@@ -12,13 +12,13 @@ const albumsGet = async (req, res) => {
 
     if (!user) return res.status(400).send('User ID not matching the database');
 
-    if (user.albums.length <= 0) return res.status(200).send('You have no albums yet')
+    if (user.albums.length <= 0) return res.status(200).send({ 'albumList': [], 'message': 'You have not album yet...' });
 
     try {
 
         userAlbums = user.albums
 
-        return res.status(200).send(userAlbums);
+        return res.status(200).send({ 'albumList': userAlbums, 'message': 'success' });
 
     } catch (err) {
         return res.status(500).send(err.message);
@@ -46,7 +46,10 @@ const createAlbumPost = async (req, res) => {
         const newAlbum = new Album({
             title: albumTitle,
             description: albumDesc,
-            owner: user._id
+            owner: user._id,
+            size: {
+                items: {}
+            }
         });
 
         await newAlbum.save();
@@ -64,7 +67,7 @@ const createAlbumPost = async (req, res) => {
         await user.albums.push(newAlbumAccess)
         await user.save()
 
-        return res.status(200).send(`Album ${albumTitle} successfully created`);
+        return res.status(200).send({ 'albumId': newAlbum._id, 'title': albumTitle, 'description': albumDesc });
 
     } catch (err) {
         res.status(500).send(err.message);
@@ -98,7 +101,7 @@ const deleteAlbum = async (req, res) => {
             { $pull: { 'albums': { 'albumId': ObjectId(albumId) } } }
         );
 
-        return res.status(200).send('Deletion successfull');
+        return res.status(200).send('"Deletion successfull"');
     } catch (err) {
 
         res.status(400).send(err.message);
@@ -115,18 +118,18 @@ const addAccess = async (req, res) => {
     // Checks if the user target ID provided is correct acreates user variable
     const targetUserId = req.body.targetId;
     const targetUser = await User.findOne({ _id: targetUserId });
-    if (!targetUser) return res.status(400).send('Target user ID incorrect');
+    if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
 
     // Checks if the requested right is valid such as declared in the model
     const requestedRights = req.body.rights;
-    if (!requestedRights) return res.status(400).send('Request must include requested rights')
+    if (!requestedRights) return res.status(400).send('"Request must include requested rights"')
 
     // Checks if the requested rights are in the server defined list
     var validated = true;
     requestedRights.forEach(right => {
         validated = (Rights.includes(right));
     });
-    if (!validated) return res.status(400).send('Requested rights are not valid')
+    if (!validated) return res.status(400).send('"Requested rights are not valid')
 
     try {
         // Updates entry if exists

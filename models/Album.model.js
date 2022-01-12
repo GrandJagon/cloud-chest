@@ -31,11 +31,13 @@ const albumSchema = new mongoose.Schema({
             default: 0
         },
         items: {
-            type: Object
-        }
+            type: Object,
+            default: {}
+        },
     },
     files: [File]
-});
+},
+    { minimize: false });
 
 
 module.exports = mongoose.model('Album', albumSchema);
