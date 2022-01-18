@@ -37,7 +37,6 @@ app.use('/content', contentRoute);
 app.use('/users', userRoute);
 
 
-
 var httpsServer = https.createServer(options, app);
 
 // Starting listening to port provided 
