@@ -14,13 +14,17 @@ const editUser = async (req, res) => {
         const emailExists = await User.findOne({ email: req.body.email })
         if (emailExists) return res.status(400).send('Email already in use');
     }
-    const newEmail = req.body.email ?? user.email
+    var newEmail;
+
+    req.body.email != null ? newEmail = req.body.email : user.email;
 
     if (req.body.username) {
         const usernameExists = await User.findOne({ username: req.body.username })
         if (usernameExists) return res.status(400).send('Email already in use');
     }
-    const newUsername = req.body.username ?? user.username
+
+    var newUsername;
+    req.body.uername != null ? newUsername = req.body.username : newUsername = user.username;
 
     const newPassword = req.body.password ? saltHash(newPassword, salt(process.env.SALT_LENGTH)) : user.password;
 

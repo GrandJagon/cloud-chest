@@ -1,8 +1,16 @@
 require('dotenv').config();
+const https = require('https');
+const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
 
 const app = express();
+
+// Loading SSL certficate 
+const options = {
+    key: fs.readFileSync('./ssl/server.key'),
+    cert: fs.readFileSync('./ssl/server.cert')
+};
 
 
 // Importing and initiating mongoDB and redis cache (used to store fresh tokens)
@@ -29,11 +37,13 @@ app.use('/content', contentRoute);
 app.use('/users', userRoute);
 
 
-// Starting to listen to port 3000 on local host
-var server = app.listen(process.env.PORT, () => {
-    console.log('Listening to port ' + process.env.PORT);
-});
 
+var httpsServer = https.createServer(options, app);
+
+// Starting listening to port provided 
+httpsServer.listen(process.env.PORT, ()=>{
+    console.log('Server up and listening to port '+process.env.PORT);
+});
 
 
 
