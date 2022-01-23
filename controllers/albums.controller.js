@@ -12,13 +12,13 @@ const albumsGet = async (req, res) => {
 
     if (!user) return res.status(400).send('User ID not matching the database');
 
-    if (user.albums.length <= 0) return res.status(200).send({ 'albumList': [], 'message': 'You have not album yet...' });
+    if (user.albums.length <= 0) return res.status(200).send([]);
 
     try {
 
         userAlbums = user.albums
 
-        return res.status(200).send({ 'albumList': userAlbums, 'message': 'success' });
+        return res.status(200).send(userAlbums);
 
     } catch (err) {
         return res.status(500).send(err.message);
@@ -101,7 +101,7 @@ const deleteAlbum = async (req, res) => {
             { $pull: { 'albums': { 'albumId': ObjectId(albumId) } } }
         );
 
-        return res.status(200).send('"Deletion successfull"');
+        return res.status(200).send('Deletion successfull');
     } catch (err) {
 
         res.status(400).send(err.message);

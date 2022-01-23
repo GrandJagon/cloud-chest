@@ -1,13 +1,12 @@
 const router = require('express').Router();
 const { checkAuth } = require('../middlewares/auth.middleware');
 const { editUser, deleteUser } = require("../controllers/users.controller");
-const { log } = require('../middlewares/log.middleware');
 
 // Route to edit a user profile
-router.patch('/', log, checkAuth, editUser);
+router.patch('/',  checkAuth, editUser);
 
 // Route to delete a user
-router.delete('/', log, checkAuth, deleteUser);
+router.delete('/', checkAuth, deleteUser);
 
 module.exports = router;
 

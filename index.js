@@ -3,6 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
+const {log} = require('./middlewares/log.middleware');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/storage', express.static('storage'));
 
 
 // Attaching routes
+app.use('/', log);
 app.use('/auth', authRoute);
 app.use('/albums', albumsRoute);
 app.use('/content', contentRoute);
