@@ -67,7 +67,7 @@ const createAlbumPost = async (req, res) => {
         await user.albums.push(newAlbumAccess)
         await user.save()
 
-        return res.status(200).send({ 'albumId': newAlbum._id, 'title': albumTitle, 'description': albumDesc });
+        return res.status(200).send({ 'albumId': newAlbum._id, 'title': albumTitle, 'description': albumDesc , 'rights':['admin']});
 
     } catch (err) {
         res.status(500).send(err.message);
