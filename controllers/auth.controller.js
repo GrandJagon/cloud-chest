@@ -37,7 +37,7 @@ const registerPost = async (req, res) => {
         // Adding the refresh token to the cache
         await Cache.add(user._id.toString(), JSON.stringify(refreshToken));
 
-        return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
+        return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, userId: user._id.toString() });
 
     } catch (err) {
         console.log(err.stack);
@@ -67,7 +67,7 @@ const loginPost = async (req, res) => {
         // Adding the refresh token to the cache
         await Cache.add(user._id.toString(), JSON.stringify(refreshToken));
 
-        return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
+        return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, userId : user._id.toString() });
     } catch (err) {
         res.status(400).send(err.message);
     }

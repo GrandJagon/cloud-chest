@@ -35,6 +35,7 @@ const writeContent = async (req, res) => {
             var filetype = file.filename.split('.').at(-1);
 
             newFiles.push(new File({
+                id: file._id,
                 path: file.path,
                 size: file.size,
                 mimetype: filetype
@@ -86,7 +87,7 @@ const deleteContent = async (req, res) => {
 
     // Check if files in the request has a proper structure and store id and path into variables
     try {
-        var filesId = files.map(f => ObjectId(f._id.toString()));
+        var filesId = files.map(f => ObjectId(f.id.toString()));
         var filesPath = files.map(f => f.path);
 
         // Updates the item map by removing the count of file according to their mimetype
@@ -121,7 +122,7 @@ const deleteContent = async (req, res) => {
             }
         );
 
-        return res.status(200).send('Deletion of ' + files.length + ' items successfull');
+        return res.status(200).send("Deletion of " + files.length + " items successfull");
 
     } catch (err) {
         return res.status(500).send(err.message);
