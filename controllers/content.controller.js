@@ -37,8 +37,6 @@ const writeContent = async (req, res) => {
 
             var _metadata = await _extractExif(file.path);
 
-            console.log('main function ' + _metadata);
-
             newFiles.push(new File({
                 id: file._id,
                 path: file.path,
@@ -85,7 +83,6 @@ const _extractExif =  async (path) => {
 
     return new Promise( function(resolve, reject) {
         new ExifImage({ image : path }, function( error, exifData ) {
-            console.log('start new exif image');
             var exif = {}
             if (error) {
                 console.log ('Error while extracting exif data '+error.message);
@@ -94,7 +91,6 @@ const _extractExif =  async (path) => {
             else 
                 exif.creationDate = exifData.exif.CreateDate;
                 if (Object.keys(exifData.gps).length > 0 ) exif.gps = exifData.gps;
-                console.log('exif function  : ' + exif);
                 return resolve(exif);
         });
 
