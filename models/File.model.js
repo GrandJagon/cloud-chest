@@ -7,18 +7,6 @@ const fileSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    creationDate: {
-        type: Date
-    },
-    latitude: {
-        type: String
-    },
-    longitude: {
-        type: String
-    },
-    location: {
-        type: String
-    },
     storageDate: {
         type: Date,
         default: Date.now()
@@ -28,7 +16,11 @@ const fileSchema = new mongoose.Schema({
     },
     mimetype: {
         type: String
-    }
+    },
+    metadata : {
+        type: Map,
+        of: String
+    },
 });
 
 module.exports = mongoose.model('File', fileSchema);

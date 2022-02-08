@@ -2,6 +2,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const Album = require('../models/Album.model');
 const File = require('../models/File.model');
 const { deleteFiles } = require('../services/storage');
+const ExifImage = require('exif').ExifImage;
 
 // Request the content of album, returns list of file path
 // Takes user ID and album ID from request as middleware appends them once verified
@@ -34,12 +35,19 @@ const writeContent = async (req, res) => {
             // Type inference
             var filetype = file.filename.split('.').at(-1);
 
+            var _metadata = await _extractExif(file.path);
+
+            console.log('main function ' + _metadata);
+
             newFiles.push(new File({
                 id: file._id,
                 path: file.path,
                 size: file.size,
-                mimetype: filetype
+                mimetype: filetype,
+                metadata: _metadata
             }));
+
+            console.log(newFiles);
 
             // Update the item map with the new file type
             itemMap = _updateItemMap(itemMap, file, filetype, 'add');
@@ -70,6 +78,28 @@ const writeContent = async (req, res) => {
 
         return res.status(400).send(err.message);
     }
+}
+
+// Extratcs exif metadata from the uploaded content in order to save it in the db
+const _extractExif =  async (path) => {
+
+    return new Promise( function(resolve, reject) {
+        new ExifImage({ image : path }, function( error, exifData ) {
+            console.log('start new exif image');
+            var exif = {}
+            if (error) {
+                console.log ('Error while extracting exif data '+error.message);
+                return resolve({});
+            }
+            else 
+                exif.creationDate = exifData.exif.CreateDate;
+                if (Object.keys(exifData.gps).length > 0 ) exif.gps = exifData.gps;
+                console.log('exif function  : ' + exif);
+                return resolve(exif);
+        });
+
+    });
+    
 }
 
 // Deletes specific files from given album
