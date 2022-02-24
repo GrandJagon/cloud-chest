@@ -78,6 +78,7 @@ const writeContent = async (req, res) => {
     }
 }
 
+
 // Extratcs exif metadata from the uploaded content in order to save it in the db
 const _extractExif =  async (path) => {
 

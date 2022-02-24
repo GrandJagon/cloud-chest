@@ -13,10 +13,6 @@ const albumSchema = new mongoose.Schema({
         required: true,
         max: 30
     },
-    description: {
-        type: String,
-        max: 1024
-    },
     thumbnail: {
         type: String
     },

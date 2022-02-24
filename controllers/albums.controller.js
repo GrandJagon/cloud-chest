@@ -5,7 +5,7 @@ const AlbumAccess = require('../models/AlbumAccess.model');
 const Rights = require('../models/Rights.model');
 const { deleteFiles } = require('../services/storage');
 
-// Returns an array with an users albums
+// Returns an array with a users albums
 const albumsGet = async (req, res) => {
     // Fetches user in db according to id provided by the auth middleware (once token verified)
     const user = await User.findOne({ _id: ObjectId(req.user) });
