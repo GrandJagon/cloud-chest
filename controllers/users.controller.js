@@ -51,6 +51,19 @@ const editUser = async (req, res) => {
 
 }
 
+// Finds a user given mail address
+const findUser = async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email })
+    if(user) return res.status(200).send(user);
+
+    return res.status(200).send('User not found');
+
+    } catch(err){
+        return res.status(500).send(err.message);
+    }
+}
+
 // Deletes a user and any album that they own
 const deleteUser = async (req, res) => {
     const userId = req.userId;

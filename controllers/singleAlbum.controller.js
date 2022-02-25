@@ -6,11 +6,13 @@ const ExifImage = require('exif').ExifImage;
 
 // Request the content of album, returns list of file path
 // Takes user ID and album ID from request as middleware appends them once verified
-const getContent = async (req, res) => {
+const getSingleAlbum = async (req, res) => {
     const album = req.album;
 
+    console.log(album);
+
     try {
-        return res.status(200).send(album.files);
+        return res.status(200).send(album);
 
     } catch (err) {
         return res.status(500).send(err.message);
@@ -176,4 +178,163 @@ const _updateItemMap = (itemMap, file, type, action) => {
 }
 
 
-module.exports = { getContent, writeContent, deleteContent };
+// Allows to add, edit or delete user accesses to a specific album
+// Takes a userID, an albumID and the requested access as parameters
+const addAccess = async (req, res) => {
+
+    const albumId = req.albumId;
+    const album = req.album;
+
+    // Checks if the user target ID provided is correct acreates user variable
+    const targetUserId = req.body.targetId;
+    const targetUser = await User.findOne({ _id: targetUserId });
+    if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
+
+    // Checks if the requested right is valid such as declared in the model
+    const requestedRights = req.body.rights;
+    if (!requestedRights) return res.status(400).send('"Request must include requested rights"')
+
+    // Checks if the requested rights are in the server defined list
+    var validated = true;
+    requestedRights.forEach(right => {
+        validated = (Rights.includes(right));
+    });
+    if (!validated) return res.status(400).send('"Requested rights are not valid')
+
+    try {
+        // Updates entry in user object if exists
+        const updateUser = await User.updateOne(
+            { _id: targetUserId, "albums.albumId": albumId },
+            {
+                $set: {
+                    "albums.$.title": album.title,
+                    "albums.$.rights": requestedRights,
+                    "albums.$.thumbnail": album.thumbnail
+                }
+            }
+        );
+
+        // Updates entry in album object if exists
+        const updateAlbum = await Album.updateOne(
+            { _id: albumId, "users.userId": userId },
+            {
+                $push: {
+                    "users.$.rights": requestedRights
+                }
+            }
+        )
+
+
+        // If the update user did not find entry to modify creates it
+        if (updateUser.modifiedCount <= 0) {
+
+            await User.updateOne(
+                { _id: targetUserId },
+                {
+                    $push: {
+                        "albums": {
+                            "albumId": albumId,
+                            "title": album.title,
+                            "rights": requestedRights,
+                            "thumbnail": album.thumbnail
+                        }
+                    }
+                }
+            );
+        }
+
+        // If the update album did not find any entry to ;odify creates it
+        if (updateAlbum.modifiedCount <= 0) {
+            await Album.updateOne(
+                { _id: albumId},
+                {
+                    $push: {
+                        "users": {
+                            "userId": userId,
+                            "rights": requestedRights
+                        }
+                    }
+                }
+            )
+        }
+
+        return res.status(200).send('Access successfully added');
+
+    } catch (err) {
+        return res.status(500).send(err.stack);
+    }
+
+}
+
+// Handles album edit
+// Takes title, desc and/or thumbnail from the request and update the db
+const editAlbum = async (req, res) => {
+
+    const albumId = req.albumId;
+    const album = req.album;
+
+    // Fetching new values from request or assigning to old ones if not
+    var newTitle = req.body.title;
+    if (!newTitle) newTitle = album.title;
+
+
+    var newThumbnail = req.body.thumbnail;
+    if (!newThumbnail) newThumbnail = album.thumbnail;
+
+    try {
+
+        // Updates the album object with the new values
+        await Album.updateOne(
+            { _id: albumId },
+            {
+                title: newTitle,
+                description: newDesc,
+                thumbnail: newThumbnail,
+                users: newUsers
+            }
+        );
+
+        // Propagate the updates to all the users having access to the album
+        // Necessaray because they got access to title and thumbnail in their accesses
+        for (const userId of album.users) {
+            await User.updateOne(
+                { _id: userId, "albums.albumId": albumId },
+                {
+                    "albums.$.title": newTitle,
+                    "albums.$.thumbnail": newThumbnail
+                }
+            );
+        }
+
+        return res.status(200).send('Successfully updated');
+
+
+    } catch (err) {
+        return res.status(500).send(err.messages);
+    }
+
+}
+
+// Returns the detqils of a given album
+const getAlbumDetails = async (req, res) => {
+    const album = req.album;
+
+    const albumDetail = {
+        'title':album.title,
+        'thumbnail': album.thumbnail,
+        'creationDate' : album.creationDate,
+        'users': album.users,
+        'size': album.size
+    };
+
+    try {
+        res.status(200).send(albumDetail);
+    } catch(err){
+        res.status(500).send(err.message);
+    }
+}
+
+
+
+
+module.exports = { getSingleAlbum, writeContent, deleteContent, editAlbum, getAlbumDetails };

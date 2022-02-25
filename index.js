@@ -21,7 +21,7 @@ require('./services/cache');
 // Importing routes
 const authRoute = require('./routes/auth.route');
 const albumsRoute = require('./routes/albums.route');
-const contentRoute = require('./routes/content.route');
+const singleAlbumRoute = require('./routes/singleAlbum.route');
 const userRoute = require('./routes/users.route');
 
 // Attaching Middlewares
@@ -35,7 +35,7 @@ app.use('/storage', express.static('storage'));
 app.use('/', log);
 app.use('/auth', authRoute);
 app.use('/albums', albumsRoute);
-app.use('/content', contentRoute);
+app.use('/singleAlbum', singleAlbumRoute);
 app.use('/users', userRoute);
 
 
