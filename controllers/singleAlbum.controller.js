@@ -315,26 +315,8 @@ const editAlbum = async (req, res) => {
 
 }
 
-// Returns the detqils of a given album
-const getAlbumDetails = async (req, res) => {
-    const album = req.album;
-
-    const albumDetail = {
-        'title':album.title,
-        'thumbnail': album.thumbnail,
-        'creationDate' : album.creationDate,
-        'users': album.users,
-        'size': album.size
-    };
-
-    try {
-        res.status(200).send(albumDetail);
-    } catch(err){
-        res.status(500).send(err.message);
-    }
-}
 
 
 
 
-module.exports = { getSingleAlbum, writeContent, deleteContent, editAlbum, getAlbumDetails };
+module.exports = { getSingleAlbum, writeContent, deleteContent, editAlbum};

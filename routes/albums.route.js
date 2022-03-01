@@ -1,7 +1,8 @@
 const router = require('express').Router();
 const { checkAuth } = require('../middlewares/auth.middleware');
 const { checkRight } = require('../middlewares/rights.middleware');
-const { albumsGet, createAlbumPost, deleteAlbum, addAccess, editAlbum, albumDetailsGet } = require('../controllers/albumList.controller');
+const { albumsGet, createAlbumPost, deleteAlbum } = require('../controllers/albumList.controller');
+
 
 // All routes from this page handle verything that is related to the album obects such as creating it, deleting it or editing it for instance
 // The album ID must be provided in each request
@@ -12,7 +13,7 @@ router.get('/',  checkAuth, albumsGet);
 router.post('/create',  checkAuth, createAlbumPost);
 
 // Route to delete a specific album
-router.delete('/', checkAuth, checkRight('album:delete'), deleteAlbum);
+router.delete('/', checkAuth, checkRight('admin'), deleteAlbum);
 
 
 

@@ -19,6 +19,9 @@ router.delete('/', checkAuth, checkRight('content:delete'), deleteContent);
 // Route to upload files to an album
 router.post('/', checkAuth, checkRight('content:add'), storeFiles, writeContent);
 
+// Route to updates an album detais (title, thumbnail and users)
+router.patch('/', checkAuth, checkRight('admin'), editAlbum);
+
 
 module.exports = router;
 

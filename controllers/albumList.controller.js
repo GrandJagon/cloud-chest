@@ -63,6 +63,8 @@ const createAlbumPost = async (req, res) => {
         // Allows to fetch all the users currently using this album
         const newUserAccess = new UserAccess({
             userId: user._id,
+            email: user.email,
+            username: user.username,
             rights: ['admin']
         });
 

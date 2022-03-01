@@ -7,6 +7,13 @@ const userAccessSchema = new mongoose.Schema({
         type: ObjectId,
         required: true
     },
+    email: {
+        type: String,
+        reauired: true
+    },
+    username: {
+        type: String
+    },
     rights: [],
 });
 

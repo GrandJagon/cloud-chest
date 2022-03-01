@@ -2,8 +2,6 @@
 // Array to be exported to check that request contains an existing right
 const Rights = [
     "admin",
-    "album:edit",
-    "album:delete",
     "content:read",
     "content:add",
     "content:delete"
