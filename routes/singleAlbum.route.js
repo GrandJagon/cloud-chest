@@ -23,5 +23,7 @@ router.post('/', checkAuth, checkRight('content:add'), storeFiles, writeContent)
 router.patch('/', checkAuth, checkRight('admin'), editAlbum);
 
 
+
+
 module.exports = router;
 

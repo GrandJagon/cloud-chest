@@ -9,7 +9,6 @@ const ExifImage = require('exif').ExifImage;
 const getSingleAlbum = async (req, res) => {
     const album = req.album;
 
-    console.log(album);
 
     try {
         return res.status(200).send(album);
@@ -178,20 +177,14 @@ const _updateItemMap = (itemMap, file, type, action) => {
 }
 
 
-// Allows to add, edit or delete user accesses to a specific album
+// Allows to add, edit or delete users accesses to a specific album
 // Takes a userID, an albumID and the requested access as parameters
-const addAccess = async (req, res) => {
-
-    const albumId = req.albumId;
-    const album = req.album;
-
+const _addUser = async (userId, albumId, album, requestedRights) => {
     // Checks if the user target ID provided is correct acreates user variable
-    const targetUserId = req.body.targetId;
-    const targetUser = await User.findOne({ _id: targetUserId });
+    const targetUser = await User.findOne({ _id: userId });
     if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
 
     // Checks if the requested right is valid such as declared in the model
-    const requestedRights = req.body.rights;
     if (!requestedRights) return res.status(400).send('"Request must include requested rights"')
 
     // Checks if the requested rights are in the server defined list
@@ -243,7 +236,7 @@ const addAccess = async (req, res) => {
             );
         }
 
-        // If the update album did not find any entry to ;odify creates it
+        // If the update album did not find any entry to modify creates it
         if (updateAlbum.modifiedCount <= 0) {
             await Album.updateOne(
                 { _id: albumId},
@@ -258,18 +251,96 @@ const addAccess = async (req, res) => {
             )
         }
 
-        return res.status(200).send('Access successfully added');
+        console.log('Access sucessfully added to album '+albumId+ ' for user '+userId);
 
     } catch (err) {
-        return res.status(500).send(err.stack);
+        throw err;
     }
 
 }
 
+// Deletes an user from an album
+// Propagates the change to the user object
+const _deleteUser = async (userID, albumId, album) => {
+    // Checks if the user target ID provided is correct acreates user variable
+    const targetUser = await User.findOne({ _id: userId });
+    if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
+
+    try {
+        // Removes entry in user object
+        const updateUser = await User.updateOne(
+            { _id: targetUserId},
+            {
+                $unset: 
+                    {
+                        "albums.albumId": albumId 
+                    }
+            }
+        );
+
+        // Removes entry in album object
+        const updateAlbum = await Album.updateOne(
+            { _id: albumId, "users.userId": userId },
+            {
+                $push: {
+                    "users.$.rights": requestedRights
+                }
+            }
+        )
+            console.log('User ' + userId +' successfully removed')
+
+    } catch (err) {
+        throw err;
+    }
+}
+
+// Takes 2 lists of users, one for the current and one for the new that is being updated
+// Compares them and returns 2 arrays, one for the users to be deleted, the other one to be added/edited
+const _compareUsers = async (formerUsers, newUsers) => {
+
+    console.log(formerUsers);
+    console.log(newUsers);
+   
+   // Extract user that are in new users list and npt in former one to be deleted
+   var toDelete = formerUsers.filter(
+       function(formerUser) {
+           return !newUsers.some(
+               function(newUser) {
+                   return formerUser.email == newUser.email;
+               }
+           )
+       }
+   )
+
+   console.log("TO DELETE => "+toDelete);
+
+   // Extract users that are to be added or edited (because rights are different)
+   var toAdd = newUsers.filter(
+       function(newUser) {
+           return formerUsers.some(
+               function(formerUser) {
+                   var result = false;
+                   if(formerUser.email != newUser.email) return true;
+                   if(formerUser.email == newUser.email && formerUser.rights != newUser.rights) return true;
+                   return false; 
+               }
+           )
+       }
+   )
+
+   console.log("TO ADD => "+toAdd);
+   
+}
+
 // Handles album edit
-// Takes title, desc and/or thumbnail from the request and update the db
+// Takes title and/or thumbnail from the request and update the db
 const editAlbum = async (req, res) => {
 
+    console.log(req.body);
+
+    const user = req.user;
+    const newUsers = JSON.parse(req.body).users;
+    
     const albumId = req.albumId;
     const album = req.album;
 
@@ -282,6 +353,12 @@ const editAlbum = async (req, res) => {
     if (!newThumbnail) newThumbnail = album.thumbnail;
 
     try {
+
+        // DEBUG MODE FIRST PROPAGATE
+        _compareUsers(album.users, newUsers);
+
+        return;
+
 
         // Updates the album object with the new values
         await Album.updateOne(
@@ -310,6 +387,7 @@ const editAlbum = async (req, res) => {
 
 
     } catch (err) {
+        console.log(err.stack);
         return res.status(500).send(err.messages);
     }
 
