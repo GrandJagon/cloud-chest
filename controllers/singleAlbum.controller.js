@@ -298,37 +298,54 @@ const _deleteUser = async (userID, albumId, album) => {
 // Compares them and returns 2 arrays, one for the users to be deleted, the other one to be added/edited
 const _compareUsers = async (formerUsers, newUsers) => {
 
-    console.log(formerUsers);
+    console.log("NEW USERS");
     console.log(newUsers);
-   
-   // Extract user that are in new users list and npt in former one to be deleted
-   var toDelete = formerUsers.filter(
-       function(formerUser) {
-           return !newUsers.some(
-               function(newUser) {
-                   return formerUser.email == newUser.email;
-               }
-           )
-       }
-   )
+    console.log("FORMER USERS");
+    console.log(formerUsers);
 
-   console.log("TO DELETE => "+toDelete);
+    const toAdd = [];
 
-   // Extract users that are to be added or edited (because rights are different)
-   var toAdd = newUsers.filter(
-       function(newUser) {
-           return formerUsers.some(
-               function(formerUser) {
-                   var result = false;
-                   if(formerUser.email != newUser.email) return true;
-                   if(formerUser.email == newUser.email && formerUser.rights != newUser.rights) return true;
-                   return false; 
-               }
-           )
-       }
-   )
+newUserLoop:
+    for(var i in newUsers) {
+        console.log('____________________________________________');
+        newUser = newUsers[i];
+
+        for(var j in formerUsers) {
+
+            formerUser = formerUsers[j];
+
+            console.log(newUser.email + ' against '+ formerUser.email);
+            console.log(newUser.rights.toString() + ' against '+ formerUser.rights.toString());
+            
+
+            // New user was already in user list but rights have changed
+            if(newUser.email == formerUser.email && newUser.rights.toString() != formerUser.rights.toString()) {
+                console.log(newUser.email + ' already in list but rights have changed, to be added');
+                toAdd.push(newUser);
+                formerUsers.splice(j, 1);
+                console.log("NEXT NEW USER");
+                continue newUserLoop;
+            }
+
+            
+
+            // New user was already in the list and rights did not change
+            if (newUser.email == formerUser.email && newUser.rights.toString() == formerUser.rights.toString()) {
+                console.log(newUser.email + ' found in the list with similar value, going to next new user');
+                formerUsers.splice(j, 1);
+                console.log('NEXT NEW USER');
+                continue newUserLoop;
+            }
+
+            console.log("NOT MATCHING -> NEXT FORMER USER");
+        }
+        // If all the former user loop is gone through without match then new user is to be added
+        toAdd.push(newUser);
+        console.log("New user not found in list, to be added");
+    }
 
    console.log("TO ADD => "+toAdd);
+   console.log("TO DELETE => " + formerUsers);
    
 }
 
@@ -336,11 +353,9 @@ const _compareUsers = async (formerUsers, newUsers) => {
 // Takes title and/or thumbnail from the request and update the db
 const editAlbum = async (req, res) => {
 
-    console.log(req.body);
-
     const user = req.user;
-    const newUsers = JSON.parse(req.body).users;
-    
+    const newUsers = JSON.parse(req.body.users);
+
     const albumId = req.albumId;
     const album = req.album;
 
@@ -392,9 +407,6 @@ const editAlbum = async (req, res) => {
     }
 
 }
-
-
-
 
 
 module.exports = { getSingleAlbum, writeContent, deleteContent, editAlbum};
