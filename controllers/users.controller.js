@@ -54,10 +54,14 @@ const editUser = async (req, res) => {
 // Finds a user given mail address
 const findUser = async (req, res) => {
     try {
-        const user = await User.findOne({ email: req.body.email })
-    if(user) return res.status(200).send(user);
+        console.log(req.search);
+        var user = await User.findOne({ username: req.search });
+        if(!user) user = await User.findOne({ email: req.search });
 
-    return res.status(200).send('User not found');
+
+        if(user) return res.status(200).send(user);
+
+        return res.status(404).send('User not found');
 
     } catch(err){
         return res.status(500).send(err.message);
@@ -102,4 +106,4 @@ const deleteUser = async (req, res) => {
 
 
 
-module.exports = { editUser, deleteUser };
+module.exports = { editUser, deleteUser, findUser };
