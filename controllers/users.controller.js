@@ -54,14 +54,14 @@ const editUser = async (req, res) => {
 // Finds a user given mail address
 const findUser = async (req, res) => {
     try {
-        console.log(req.search);
-        var user = await User.findOne({ username: req.search });
-        if(!user) user = await User.findOne({ email: req.search });
+      
+        var user = await User.find({ username: req.query.search });
+    
+        if(user.length < 1) user = await User.find({ email: req.query.search });
 
+        if(user.length > 0) return res.status(200).send(user);
 
-        if(user) return res.status(200).send(user);
-
-        return res.status(404).send('User not found');
+        return res.status(404).send(null);
 
     } catch(err){
         return res.status(500).send(err.message);

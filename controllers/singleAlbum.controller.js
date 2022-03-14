@@ -1,5 +1,6 @@
 const ObjectId = require('mongoose').Types.ObjectId;
 const Album = require('../models/Album.model');
+const User = require('../models/User.model');
 const File = require('../models/File.model');
 const { deleteFiles } = require('../services/storage');
 const ExifImage = require('exif').ExifImage;
@@ -179,7 +180,7 @@ const _updateItemMap = (itemMap, file, type, action) => {
 
 // Allows to add, edit or delete users accesses to a specific album
 // Takes a userID, an albumID and the requested access as parameters
-const _addUser = async (userId, albumId, album, requestedRights) => {
+const _addUser = async (userId, albumId, requestedRights) => {
     // Checks if the user target ID provided is correct acreates user variable
     const targetUser = await User.findOne({ _id: userId });
     if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
@@ -261,14 +262,14 @@ const _addUser = async (userId, albumId, album, requestedRights) => {
 
 // Deletes an user from an album
 // Propagates the change to the user object
-const _deleteUser = async (userID, albumId, album) => {
+const _deleteUser = async (userID, albumId) => {
     // Checks if the user target ID provided is correct acreates user variable
-    const targetUser = await User.findOne({ _id: userId });
+    const targetUser = await User.findOne({ _id: userID });
     if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
 
     try {
         // Removes entry in user object
-        const updateUser = await User.updateOne(
+        await User.updateOne(
             { _id: targetUserId},
             {
                 $unset: 
@@ -279,11 +280,12 @@ const _deleteUser = async (userID, albumId, album) => {
         );
 
         // Removes entry in album object
-        const updateAlbum = await Album.updateOne(
-            { _id: albumId, "users.userId": userId },
+        await Album.updateOne(
+            { _id: albumId },
             {
-                $push: {
-                    "users.$.rights": requestedRights
+                $unset :
+                {
+                    "users.userId": userID 
                 }
             }
         )
@@ -296,56 +298,45 @@ const _deleteUser = async (userID, albumId, album) => {
 
 // Takes 2 lists of users, one for the current and one for the new that is being updated
 // Compares them and returns 2 arrays, one for the users to be deleted, the other one to be added/edited
-const _compareUsers = async (formerUsers, newUsers) => {
-
-    console.log("NEW USERS");
-    console.log(newUsers);
-    console.log("FORMER USERS");
-    console.log(formerUsers);
+const _compareUsers = async (albumUsers, newUsers) => {
 
     const toAdd = [];
 
+    // Cloning current user list to do not alter it on the fly
+    const users = [...albumUsers]
+
 newUserLoop:
     for(var i in newUsers) {
-        console.log('____________________________________________');
         newUser = newUsers[i];
 
-        for(var j in formerUsers) {
+        for(var j in users) {
 
-            formerUser = formerUsers[j];
-
-            console.log(newUser.email + ' against '+ formerUser.email);
-            console.log(newUser.rights.toString() + ' against '+ formerUser.rights.toString());
-            
+            user = users[j];
 
             // New user was already in user list but rights have changed
-            if(newUser.email == formerUser.email && newUser.rights.toString() != formerUser.rights.toString()) {
-                console.log(newUser.email + ' already in list but rights have changed, to be added');
+            if(newUser.email == user.email && newUser.rights.toString() != user.rights.toString()) {
                 toAdd.push(newUser);
-                formerUsers.splice(j, 1);
-                console.log("NEXT NEW USER");
+                users.splice(j, 1);
                 continue newUserLoop;
             }
 
             
 
             // New user was already in the list and rights did not change
-            if (newUser.email == formerUser.email && newUser.rights.toString() == formerUser.rights.toString()) {
-                console.log(newUser.email + ' found in the list with similar value, going to next new user');
-                formerUsers.splice(j, 1);
-                console.log('NEXT NEW USER');
+            // In this case user is removed from list
+            if (newUser.email == user.email && newUser.rights.toString() == user.rights.toString()) {
+                users.splice(j, 1);
                 continue newUserLoop;
             }
 
-            console.log("NOT MATCHING -> NEXT FORMER USER");
+       
         }
         // If all the former user loop is gone through without match then new user is to be added
         toAdd.push(newUser);
-        console.log("New user not found in list, to be added");
     }
-
-   console.log("TO ADD => "+toAdd);
-   console.log("TO DELETE => " + formerUsers);
+    
+    // user is list of users to be deleted
+    return { toAdd, users } ;
    
 }
 
@@ -370,9 +361,10 @@ const editAlbum = async (req, res) => {
     try {
 
         // DEBUG MODE FIRST PROPAGATE
-        _compareUsers(album.users, newUsers);
+        const { toAdd, toDelete } = _compareUsers(album.users, newUsers);
 
-        return;
+        for(user in toAdd) _addUser(user.userId, albumId, album, user.requestedRights);
+        for(user in toDelete) _deleteUser(user.userId, albumId, album);
 
 
         // Updates the album object with the new values
@@ -380,17 +372,18 @@ const editAlbum = async (req, res) => {
             { _id: albumId },
             {
                 title: newTitle,
-                description: newDesc,
-                thumbnail: newThumbnail,
-                users: newUsers
+                thumbnail: newThumbnail
             }
         );
 
         // Propagate the updates to all the users having access to the album
         // Necessaray because they got access to title and thumbnail in their accesses
-        for (const userId of album.users) {
+        for (const user of album.users) {
+
+            console.log(albumId + '    =>    ' + user.userId);
+           
             await User.updateOne(
-                { _id: userId, "albums.albumId": albumId },
+                { _id: user.userId, "albums.albumId": albumId },
                 {
                     "albums.$.title": newTitle,
                     "albums.$.thumbnail": newThumbnail
