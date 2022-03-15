@@ -28,6 +28,7 @@ const checkRight = (right) => {
         // Sets the value in the request
         req.albumId = albumId;
         req.album = albumObject;
+        req.user = user;
 
         next();
     }

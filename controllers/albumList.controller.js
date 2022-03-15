@@ -49,17 +49,7 @@ const createAlbumPost = async (req, res) => {
             }
         });
 
-        await newAlbum.save();
-
-        // Creating the albumAccess object to append in the user document
-        // Contains the album ID, title, description and the users rights in the album
-        const newAlbumAccess = new AlbumAccess({
-            albumId: newAlbum._id,
-            title: albumTitle,
-            rights: ['admin']
-        })
-        
-        // Creates a new user access object to put in the album 
+         // Creates a new user access object to put in the album 
         // Allows to fetch all the users currently using this album
         const newUserAccess = new UserAccess({
             userId: user._id,
@@ -69,6 +59,17 @@ const createAlbumPost = async (req, res) => {
         });
 
         await newAlbum.users.push(newUserAccess);
+
+        await newAlbum.save();
+
+        // Creating the albumAccess object to append in the user document
+        // Contains the album ID, title, description and the users rights in the album
+        const newAlbumAccess = new AlbumAccess({
+            albumId: newAlbum._id,
+            title: albumTitle,
+            rights: ['admin']
+        })
+    
 
         // Appending the content and saving the users documents
         await user.albums.push(newAlbumAccess)

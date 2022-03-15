@@ -344,7 +344,6 @@ newUserLoop:
 // Takes title and/or thumbnail from the request and update the db
 const editAlbum = async (req, res) => {
 
-    const user = req.user;
     const newUsers = JSON.parse(req.body.users);
 
     const albumId = req.albumId;
@@ -353,7 +352,6 @@ const editAlbum = async (req, res) => {
     // Fetching new values from request or assigning to old ones if not
     var newTitle = req.body.title;
     if (!newTitle) newTitle = album.title;
-
 
     var newThumbnail = req.body.thumbnail;
     if (!newThumbnail) newThumbnail = album.thumbnail;
@@ -385,11 +383,12 @@ const editAlbum = async (req, res) => {
             await User.updateOne(
                 { _id: user.userId, "albums.albumId": albumId },
                 {
-                    "albums.$.title": newTitle,
-                    "albums.$.thumbnail": newThumbnail
+                    title: newTitle,
+                    thumbnail: newThumbnail
                 }
             );
         }
+
 
         return res.status(200).send('Successfully updated');
 
