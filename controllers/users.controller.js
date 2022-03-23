@@ -12,7 +12,7 @@ const editUser = async (req, res) => {
     // Fetching requested update from the request or keep same values if null 
     if (req.body.email) {
         const emailExists = await User.findOne({ email: req.body.email })
-        if (emailExists) return res.status(400).send('Email already in use');
+        if (emailExists) return res.status(400).send(JSON.stringify('Email already in use'));
     }
     var newEmail;
 
@@ -42,7 +42,7 @@ const editUser = async (req, res) => {
             }
         );
 
-        res.status('200').send('Update succesfull');
+        res.status('200').send(JSON.stringify('Update succesfull'));
 
     } catch (err) {
         return res.status(500).send(err.message);
@@ -88,7 +88,7 @@ const deleteUser = async (req, res) => {
 
         // Delete the files
         await deleteFiles(userFiles, (err) => {
-            if (err) return res.status(500).send('Error while deleting files');
+            if (err) return res.status(500).send(JSON.stringify('Error while deleting files'));
         });
 
         // Delete the albums from the db
@@ -97,7 +97,7 @@ const deleteUser = async (req, res) => {
         // Delete the user from the db
         await User.deleteOne({ _id: userId });
 
-        res.status(200).send('User successfully deleted');
+        res.status(200).send(JSON.stringify('User successfully deleted'));
 
     } catch (err) {
         res.status(500).send(err.message)

@@ -16,7 +16,7 @@ const registerPost = async (req, res) => {
 
     // Checking if email or username already assigned
     const emailExists = await User.findOne({ email: req.body.email });
-    if (emailExists) return res.status(400).send(req.body.email + ': This email address is already in use');
+    if (emailExists) return res.status(400).send(JSON.stringify(req.body.email + ': This email address is already in use'));
 
     try {
         // Hashing the password with a salt of 32 random hexadecimal characters

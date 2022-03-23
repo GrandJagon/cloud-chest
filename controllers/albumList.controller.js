@@ -109,7 +109,7 @@ const deleteAlbum = async (req, res) => {
             { $pull: { 'albums': { 'albumId': ObjectId(albumId) } } }
         );
 
-        return res.status(200).send('Deletion successfull');
+        return res.status(200).send(JSON.stringify('Deletion successfull'));
     } catch (err) {
 
         res.status(400).send(err.message);

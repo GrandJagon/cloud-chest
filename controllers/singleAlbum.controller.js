@@ -124,7 +124,7 @@ const deleteContent = async (req, res) => {
             itemMap = _updateItemMap(itemMap, file, 'remove');
         });
     } catch (err) {
-        return res.status(400).send('Error while extracting files to delete from request => ' + err.stack);
+        return res.status(400).send(JSON.stringify('Error while extracting files to delete from request => ' + err.stack));
     }
 
     // Delete the files from the storage
@@ -151,9 +151,10 @@ const deleteContent = async (req, res) => {
             }
         );
 
-        return res.status(200).send("Deletion of " + files.length + " items successfull");
+        return res.status(200).send(JSON.stringify("Deletion of " + files.length + " items successfull"));
 
     } catch (err) {
+        console.log(err);
         return res.status(500).send(err.message);
     }
 }
@@ -183,17 +184,17 @@ const _updateItemMap = (itemMap, file, type, action) => {
 const _addUser = async (userId, albumId, requestedRights) => {
     // Checks if the user target ID provided is correct acreates user variable
     const targetUser = await User.findOne({ _id: userId });
-    if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
+    if (!targetUser) return res.status(400).send(JSON.stringify("Target user ID incorrect"));
 
     // Checks if the requested right is valid such as declared in the model
-    if (!requestedRights) return res.status(400).send('"Request must include requested rights"')
+    if (!requestedRights) return res.status(400).send(JSON.stringify("Request must include requested rights"))
 
     // Checks if the requested rights are in the server defined list
     var validated = true;
     requestedRights.forEach(right => {
         validated = (Rights.includes(right));
     });
-    if (!validated) return res.status(400).send('"Requested rights are not valid')
+    if (!validated) return res.status(400).send(JSON.stringify("Requested rights are not valid"));
 
     try {
         // Updates entry in user object if exists
@@ -265,7 +266,7 @@ const _addUser = async (userId, albumId, requestedRights) => {
 const _deleteUser = async (userID, albumId) => {
     // Checks if the user target ID provided is correct acreates user variable
     const targetUser = await User.findOne({ _id: userID });
-    if (!targetUser) return res.status(400).send('"Target user ID incorrect"');
+    if (!targetUser) return res.status(400).send(JSON.stringify("Target user ID incorrect"));
 
     try {
         // Removes entry in user object
@@ -390,7 +391,7 @@ const editAlbum = async (req, res) => {
         }
 
 
-        return res.status(200).send('Successfully updated');
+        return res.status(200).send(JSON.stringify('Successfully updated'));
 
 
     } catch (err) {
