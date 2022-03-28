@@ -9,22 +9,24 @@ const editUser = async (req, res) => {
     const user = req.user;
     const userId = req.userId;
 
+    console.log(req.body);
+
     // Fetching requested update from the request or keep same values if null 
     if (req.body.email) {
-        const emailExists = await User.findOne({ email: req.body.email })
-        if (emailExists) return res.status(400).send(JSON.stringify('Email already in use'));
+        const emailExists = await User.find({ email: req.body.email});
+        if (emailExists._id == userId) return res.status(400).send(JSON.stringify('Email already in use'));
     }
     var newEmail;
 
     req.body.email != null ? newEmail = req.body.email : user.email;
 
     if (req.body.username) {
-        const usernameExists = await User.findOne({ username: req.body.username })
-        if (usernameExists) return res.status(400).send('Email already in use');
+        const usernameExists = await User.findOne({ username: req.body.username});
+        if (usernameExists && usernameExists._id == userId) return res.status(400).send('Username already in use');
     }
 
     var newUsername;
-    req.body.uername != null ? newUsername = req.body.username : newUsername = user.username;
+    req.body.username != null ? newUsername = req.body.username : newUsername = user.username;
 
     const newPassword = req.body.password ? saltHash(newPassword, salt(process.env.SALT_LENGTH)) : user.password;
 
@@ -42,6 +44,8 @@ const editUser = async (req, res) => {
             }
         );
 
+        console.log(newUsername);
+
         res.status('200').send(JSON.stringify('Update succesfull'));
 
     } catch (err) {
@@ -58,6 +62,21 @@ const findUser = async (req, res) => {
         var user = await User.find({ username: req.query.search });
     
         if(user.length < 1) user = await User.find({ email: req.query.search });
+
+        if(user.length > 0) return res.status(200).send(user);
+
+        return res.status(404).send(null);
+
+    } catch(err){
+        return res.status(500).send(err.message);
+    }
+}
+
+// Finds a user given mail address
+const findUserById = async (req, res) => {
+    try {
+      
+        var user = await User.find({ _id: req.query.id });
 
         if(user.length > 0) return res.status(200).send(user);
 
@@ -106,4 +125,4 @@ const deleteUser = async (req, res) => {
 
 
 
-module.exports = { editUser, deleteUser, findUser };
+module.exports = { editUser, deleteUser, findUser, findUserById };

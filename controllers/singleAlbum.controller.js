@@ -378,18 +378,18 @@ const editAlbum = async (req, res) => {
         // Propagate the updates to all the users having access to the album
         // Necessaray because they got access to title and thumbnail in their accesses
         for (const user of album.users) {
-
-            console.log(albumId + '    =>    ' + user.userId);
            
-            await User.updateOne(
+            const updateCount = await User.updateOne(
                 { _id: user.userId, "albums.albumId": albumId },
-                {
-                    title: newTitle,
-                    thumbnail: newThumbnail
+                {   
+                    $set:
+                    {
+                        "albums.$.title": newTitle,
+                        "albums.$.thumbnail": newThumbnail
+                    }
                 }
             );
         }
-
 
         return res.status(200).send(JSON.stringify('Successfully updated'));
 
