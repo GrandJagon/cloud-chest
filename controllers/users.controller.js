@@ -8,13 +8,11 @@ const { deleteFiles } = require('../services/storage');
 const editUser = async (req, res) => {
     const user = req.user;
     const userId = req.userId;
-
-    console.log(req.body);
-
+    
     // Fetching requested update from the request or keep same values if null 
     if (req.body.email) {
-        const emailExists = await User.find({ email: req.body.email});
-        if (emailExists._id == userId) return res.status(400).send(JSON.stringify('Email already in use'));
+        const emailExists = await User.findOne({ email:  req.body.email});
+        if (emailExists && emailExists.id != userId) return res.status(400).send(JSON.stringify('Email already in use'));
     }
     var newEmail;
 
@@ -22,17 +20,17 @@ const editUser = async (req, res) => {
 
     if (req.body.username) {
         const usernameExists = await User.findOne({ username: req.body.username});
-        if (usernameExists && usernameExists._id == userId) return res.status(400).send('Username already in use');
+        if (usernameExists && usernameExists.id != userId) return res.status(400).send(JSON.stringify('Username already in use'));
     }
 
     var newUsername;
     req.body.username != null ? newUsername = req.body.username : newUsername = user.username;
 
-    const newPassword = req.body.password ? saltHash(newPassword, salt(process.env.SALT_LENGTH)) : user.password;
+    const newPassword = req.body.password != null ? saltHash(req.body.password, salt(parseInt(process.env.SALT_LENGTH))) : user.password;
 
     try {
 
-        // Updates the database
+        // Updates the user object
         await User.updateOne(
             { _id: userId },
             {
@@ -43,6 +41,23 @@ const editUser = async (req, res) => {
                 }
             }
         );
+
+        // Propagates changes to album that user has access to
+        for(const album of user.albums) {
+            const albumId = album.albumId;
+            console.log(albumId);
+            console.log(userId);
+
+            await Album.updateOne(
+                { _id :albumId, "users.userId": userId },
+                {
+                    $set: {
+                        "users.$.email": newEmail,
+                        "users.$.username": newUsername
+                    }
+                }
+            );
+        }
 
         console.log(newUsername);
 
