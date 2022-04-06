@@ -5,6 +5,7 @@ const AlbumAccess = require('../models/AlbumAccess.model');
 const UserAccess = require('../models/UserAccess.model');
 const Rights = require('../models/Rights.model');
 const { deleteFiles } = require('../services/storage');
+const fs = require('fs');
 
 // Returns an array with a users albums
 const albumsGet = async (req, res) => {
@@ -68,16 +69,27 @@ const createAlbumPost = async (req, res) => {
             albumId: newAlbum._id,
             title: albumTitle,
             rights: ['admin']
-        })
+        });
     
 
         // Appending the content and saving the users documents
-        await user.albums.push(newAlbumAccess)
-        await user.save()
+        await user.albums.push(newAlbumAccess);
+        await user.save();
+        
+        var albumPath = './storage/'+newAlbum._id;
+
+        // Finally creating the folder dedicated to the album
+        await fs.promises.mkdir(albumPath, { recursive: true }, function(err){
+            if(err){
+                console.log('Failed to create '+albumPath);
+                throw err;
+            }
+        });
 
         return res.status(200).send({ 'albumId': newAlbum._id, 'title': albumTitle, 'rights':['admin']});
 
     } catch (err) {
+        console.log(err);
         res.status(500).send(err.message);
     }
 }

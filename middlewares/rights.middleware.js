@@ -32,8 +32,27 @@ const checkRight = (right) => {
 
         next();
     }
+}
 
+// Verify that a user has access to the given album in order to serve the content
+// Only checks for that in order to make it lighter as it will be called many times to get album content
+const checkContentAccess = (req, res, next) => {
+    console.log('CHECKING CONTENT ACCESS');
+    console.log(value);
+    const user = req.user;
+    const albumId = req.originalUrl.split('storage/').at(-1).split('/').at(0);
+    
+    console.log(req.originalUrl);
+    console.log(albumId);
+
+    // Checks if the user has access to the album
+    const album = user.albums.find(album => album.albumId == albumId);
+    if (!album) return res.status(403).send('Access denied');
+
+    
+
+    next();
 }
 
 
-module.exports = { checkRight }
+module.exports = { checkRight, checkContentAccess }

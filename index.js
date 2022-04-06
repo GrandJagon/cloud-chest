@@ -23,12 +23,12 @@ const authRoute = require('./routes/auth.route');
 const albumsRoute = require('./routes/albums.route');
 const singleAlbumRoute = require('./routes/singleAlbum.route');
 const userRoute = require('./routes/users.route');
+const storageRoute = require('./routes/storage.route');
 
 // Attaching Middlewares
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/storage', express.static('storage'));
 
 
 // Attaching routes
@@ -37,6 +37,19 @@ app.use('/auth', authRoute);
 app.use('/albums', albumsRoute);
 app.use('/singleAlbum', singleAlbumRoute);
 app.use('/users', userRoute);
+
+// Static file serving
+app.use('/storage', storageRoute);
+app.use('/storage', express.static('storage'));
+
+const mailer = require('./services/mailer');
+
+const mailConfig = mailer.createMail('lucas.noirot@outlook.fr', 'lucas', 'testpassword');
+
+console.log(mailConfig);
+
+mailer.send(mailConfig);
+
 
 
 var httpsServer = https.createServer(options, app);

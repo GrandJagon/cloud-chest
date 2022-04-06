@@ -22,7 +22,6 @@ const checkAuth = async (req, res, next) => {
 
         next();
     } catch (err) {
-
         return res.status(400).send(err.message);
     }
 }

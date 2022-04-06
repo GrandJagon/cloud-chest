@@ -3,6 +3,7 @@ const Album = require('../models/Album.model');
 const User = require("../models/User.model");
 const { salt, saltHash } = require('../services/hasher');
 const { deleteFiles } = require('../services/storage');
+const mailer = require('../services/mailer');
 
 // Edits a user profile
 const editUser = async (req, res) => {

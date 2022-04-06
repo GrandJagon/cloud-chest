@@ -4,6 +4,7 @@ const User = require('../models/User.model');
 const File = require('../models/File.model');
 const { deleteFiles } = require('../services/storage');
 const ExifImage = require('exif').ExifImage;
+const fs = require('fs');
 
 // Request the content of album, returns list of file path
 // Takes user ID and album ID from request as middleware appends them once verified
@@ -39,15 +40,21 @@ const writeContent = async (req, res) => {
 
             var _metadata = await _extractExif(file.path);
 
+            var endPath = 'storage/' + albumId +  '/' + file.path.split('storage/').at(-1)
+            
+            //Moving path to definitive location (within subfolder album id)
+            fs.rename(file.path, endPath, function(err) {
+                if(err) throw err;
+                console.log(file.path + " succesfully moved to "+endPath);
+            });
+
             newFiles.push(new File({
                 id: file._id,
-                path: file.path,
+                path: endPath,
                 size: file.size,
                 mimetype: filetype,
                 metadata: _metadata
             }));
-
-            console.log(newFiles);
 
             // Update the item map with the new file type
             itemMap = _updateItemMap(itemMap, file, filetype, 'add');
