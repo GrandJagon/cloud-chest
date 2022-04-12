@@ -3,7 +3,12 @@ const https = require('https');
 const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
+const process = require('process');
 const {log} = require('./middlewares/log.middleware');
+const  { enableSignup, disableSignup } = require('./controllers/auth.controller');
+
+// Assigning name to process in order to retrieve it in case use from ssh
+process.title = 'cloud-chest';
 
 const app = express();
 
@@ -17,6 +22,9 @@ const options = {
 // Importing and initiating mongoDB and redis cache (used to store fresh tokens)
 require('./services/database');
 require('./services/cache');
+require('./services/config');
+require('./services/mailer');
+
 
 // Importing routes
 const authRoute = require('./routes/auth.route');
@@ -42,22 +50,37 @@ app.use('/users', userRoute);
 app.use('/storage', storageRoute);
 app.use('/storage', express.static('storage'));
 
-const mailer = require('./services/mailer');
-
-const mailConfig = mailer.createMail('lucas.noirot@outlook.fr', 'lucas', 'testpassword');
-
-console.log(mailConfig);
-
-mailer.send(mailConfig);
-
-
-
 var httpsServer = https.createServer(options, app);
 
 // Starting listening to port provided 
 httpsServer.listen(process.env.PORT, ()=>{
     console.log('Server up and listening to port '+process.env.PORT);
+    console.log('Process ID is '+ process.pid);
+    console.log('Process name is '+ process.title);
 });
+
+    
+// Basic console to enter command
+var readline = require('readline');
+
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+});
+
+
+// Listening for lines, expected input are commands
+rl.on('line', (line) => {
+    if(line == 'exit') process.exit();
+    if(line == 'signup-enable') enableSignup();
+    if(line == 'signup-disable') disableSignup();
+    if(line == 'signup-state') console.log(serverConfig.getValue('enableSignup'))
+});
+
+
+
+
 
 
 

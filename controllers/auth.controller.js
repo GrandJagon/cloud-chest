@@ -1,4 +1,5 @@
 require('dotenv').config({ path: '../.env' });
+require('../services/config');
 const User = require('../models/User.model');
 const { loginValidation, registerValidation, refreshTokenValidation } = require('../validation');
 const { compare } = require('../services/hasher');
@@ -8,8 +9,25 @@ const { salt, saltHash } = require('../services/hasher');
 const Cache = require('../services/cache');
 
 
+// Functions to be called from console in order to enable/disqable signup
+const enableSignup = () => {
+    serverConfig.setValue('enableSignup', true);
+    serverConfig.saveConfig();
+    console.log('New members signup is now ' + serverConfig.getValue('enableSignup'));  
+}
+
+const disableSignup = () => {
+    serverConfig.setValue('enableSignup', false);
+    serverConfig.saveConfig();
+    console.log('New members signup is now ' + serverConfig.getValue('enableSignup')); 
+}
+
+
 // Handles the post request to /auth/register
 const registerPost = async (req, res) => {
+    // Checking if signing up is open 
+    if(!serverConfig.getValue('enableSignup')) return res.status(400).send('Signing up is currently disabled, contact server admin');
+
     // Checking if body passes validation
     const { error } = registerValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message);
@@ -104,4 +122,4 @@ const refreshTokenPost = async (req, res) => {
 };
 
 
-module.exports = { registerPost, loginPost, refreshTokenPost };
+module.exports = { enableSignup, disableSignup, registerPost, loginPost, refreshTokenPost };

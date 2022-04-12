@@ -280,7 +280,7 @@ const _deleteUser = async (userID, albumId) => {
         await User.updateOne(
             { _id: targetUserId},
             {
-                $unset: 
+                $pull: 
                     {
                         "albums.albumId": albumId 
                     }
@@ -291,13 +291,14 @@ const _deleteUser = async (userID, albumId) => {
         await Album.updateOne(
             { _id: albumId },
             {
-                $unset :
+                $pull :
                 {
                     "users.userId": userID 
                 }
             }
-        )
-            console.log('User ' + userId +' successfully removed')
+        
+            )
+        console.log('User ' + userId +' successfully removed')
 
     } catch (err) {
         throw err;

@@ -1,10 +1,13 @@
 {
-  "name": "vault-test",
+  "name": "cloud-chest-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
+  },
+  "bin": {
+    "signup": "./cli.js"
   },
   "author": "grandjagon",
   "license": "",

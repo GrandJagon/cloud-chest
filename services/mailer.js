@@ -2,7 +2,6 @@ require('dotenv').config({ path: '../.env' });
 const nodemailer = require('nodemailer');
 
 
-
 class Mailer{
     constructor() {
         this._init();
@@ -12,16 +11,18 @@ class Mailer{
 
     async _init() {
         console.log('Initiating mailing service');
-        console.log(process.env.EMAIL_USERNAME)
-        console.log(process.env.EMAIL_PASSWORD)
 
         this.transporter = nodemailer.createTransport({
-            service: 'Gmail',
+            service: 'gmail',
             auth: {
+                type: 'OAuth2',
                 user: process.env.EMAIL_USERNAME,
-                pass: process.env.EMAIL_PASSWORD
-            }
-        });
+                pass: process.env.EMAIL_PASSWORD,
+                clientId: process.env.OAUTH_CLIENT_ID,
+                clientSecret: process.env.OAUTH_CLIENT_SECRET,
+                refreshToken: process.env.OAUTH_REFRESH_TOKEN
+                }
+            });
     }
 
     createMail(recipientEmail ,recipientUsername, tempPassword) {
@@ -47,6 +48,6 @@ class Mailer{
     }
 }
 
+const mailingService = new Mailer();
 
-
-module.exports = new Mailer();
+module.exports = mailingService;

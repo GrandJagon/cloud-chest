@@ -3,6 +3,7 @@ const Album = require('../models/Album.model');
 const User = require("../models/User.model");
 const { salt, saltHash } = require('../services/hasher');
 const { deleteFiles } = require('../services/storage');
+const { randomString } = require('../services/random');
 const mailer = require('../services/mailer');
 
 // Edits a user profile
@@ -60,11 +61,44 @@ const editUser = async (req, res) => {
             );
         }
 
-        console.log(newUsername);
-
         res.status('200').send(JSON.stringify('Update succesfull'));
 
     } catch (err) {
+        return res.status(500).send(err.message);
+    }
+
+
+}
+// Creates a temporary random password sent by mail to the user
+// User can creates a new one
+const resetPassword = async (req, res) => {
+    try {  
+        var user = await User.find({ username: req.query.search });
+    
+        if(user.length < 1) user = await User.find({ email: req.query.search });
+
+        if(user.length < 1) return res.status(404).send(JSON.stringify("User does not exists"));
+
+        const tempPassword = randomString(12);
+
+        // Hashing the password with a salt of 32 random hexadecimal characters
+        const hashedPassword = saltHash(tempPassword, salt(parseInt(process.env.SALT_LENGTH)));
+
+        await User.updateOne(
+            {_id: user._id},
+            {
+                "password" : hashedPassword
+            }
+        );
+        
+        // Sending user a mail with his temp password
+        const email =  mailer.createMail(user.email, user.username, tempPassword);
+
+        await mailer.send(email);
+
+        return res.staus(200).send(JSON.stringify("Password reset successful"));
+  
+    } catch(err){
         return res.status(500).send(err.message);
     }
 
@@ -141,4 +175,4 @@ const deleteUser = async (req, res) => {
 
 
 
-module.exports = { editUser, deleteUser, findUser, findUserById };
+module.exports = { editUser, resetPassword, deleteUser, findUser, findUserById };
