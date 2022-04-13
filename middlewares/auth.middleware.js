@@ -12,6 +12,8 @@ const checkAuth = async (req, res, next) => {
         // If token is valid user ID will be assigned to verifiedUser
         const verifiedUser = verifyAccessToken(token);
 
+        console.log(verifiedUser);
+
         // Fetches user in db from id provided by token 
         const user = await User.findById({ _id: verifiedUser });
         if (!user) return res.status(401).send('User ID not matching the database');

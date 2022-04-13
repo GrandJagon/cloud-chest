@@ -13,14 +13,11 @@ class Mailer{
         console.log('Initiating mailing service');
 
         this.transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                type: 'OAuth2',
-                user: process.env.EMAIL_USERNAME,
-                pass: process.env.EMAIL_PASSWORD,
-                clientId: process.env.OAUTH_CLIENT_ID,
-                clientSecret: process.env.OAUTH_CLIENT_SECRET,
-                refreshToken: process.env.OAUTH_REFRESH_TOKEN
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT,
+            auth: {   
+                user: process.env.SMTP_USERNAME,
+                pass: process.env.SMTP_PASSWORD,
                 }
             });
     }

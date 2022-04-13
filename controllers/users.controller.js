@@ -72,12 +72,11 @@ const editUser = async (req, res) => {
 // Creates a temporary random password sent by mail to the user
 // User can creates a new one
 const resetPassword = async (req, res) => {
-    try {  
-        var user = await User.find({ username: req.query.search });
-    
-        if(user.length < 1) user = await User.find({ email: req.query.search });
+    try {
+   
+        var user = await User.findOne({ email: req.body.email });
 
-        if(user.length < 1) return res.status(404).send(JSON.stringify("User does not exists"));
+        if(user.length < 1) return res.status(400).send(JSON.stringify("User does not exists"));
 
         const tempPassword = randomString(12);
 
@@ -96,7 +95,9 @@ const resetPassword = async (req, res) => {
 
         await mailer.send(email);
 
-        return res.staus(200).send(JSON.stringify("Password reset successful"));
+        console.log(email);
+
+        return res.status(200).send(JSON.stringify("Password reset successful"));
   
     } catch(err){
         return res.status(500).send(err.message);

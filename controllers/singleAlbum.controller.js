@@ -189,6 +189,8 @@ const _updateItemMap = (itemMap, file, type, action) => {
 // Allows to add, edit or delete users accesses to a specific album
 // Takes a userID, an albumID and the requested access as parameters
 const _addUser = async (userId, albumId, requestedRights) => {
+
+    console.log('rights => '+ requestedRights);
     // Checks if the user target ID provided is correct acreates user variable
     const targetUser = await User.findOne({ _id: userId });
     if (!targetUser) return res.status(400).send(JSON.stringify("Target user ID incorrect"));
@@ -198,7 +200,7 @@ const _addUser = async (userId, albumId, requestedRights) => {
 
     // Checks if the requested rights are in the server defined list
     var validated = true;
-    requestedRights.forEach(right => {
+    requestedRights.map(right => {
         validated = (Rights.includes(right));
     });
     if (!validated) return res.status(400).send(JSON.stringify("Requested rights are not valid"));
@@ -273,7 +275,7 @@ const _addUser = async (userId, albumId, requestedRights) => {
 const _deleteUser = async (userID, albumId) => {
     // Checks if the user target ID provided is correct acreates user variable
     const targetUser = await User.findOne({ _id: userID });
-    if (!targetUser) return res.status(400).send(JSON.stringify("Target user ID incorrect"));
+    console.log("Target user ID incorrect");
 
     try {
         // Removes entry in user object
@@ -368,10 +370,10 @@ const editAlbum = async (req, res) => {
     try {
 
         // DEBUG MODE FIRST PROPAGATE
-        const { toAdd, toDelete } = _compareUsers(album.users, newUsers);
+        const comparedUsers = await _compareUsers(album.users, newUsers);
 
-        for(user in toAdd) _addUser(user.userId, albumId, album, user.requestedRights);
-        for(user in toDelete) _deleteUser(user.userId, albumId, album);
+        for(const user of comparedUsers.toAdd) _addUser(user.userId, albumId, album, user.rights);
+        for(const user of comparedUsers.users) _deleteUser(user.userId, albumId, album);
 
 
         // Updates the album object with the new values
