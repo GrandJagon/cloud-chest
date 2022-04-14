@@ -2,9 +2,10 @@ require('dotenv').config({ path: '../.env' });
 const Album = require('../models/Album.model');
 const User = require("../models/User.model");
 const { salt, saltHash } = require('../services/hasher');
-const { deleteFiles } = require('../services/storage');
+const { deleteAlbum } = require('albumList.controller');
 const { randomString } = require('../services/random');
 const mailer = require('../services/mailer');
+const fs = require('fs');
 
 // Edits a user profile
 const editUser = async (req, res) => {
@@ -142,30 +143,33 @@ const findUserById = async (req, res) => {
 const deleteUser = async (req, res) => {
     const userId = req.userId;
 
+
     try {
         // Fetching all albums owned by the user
-        const userAlbums = await Album.find({ owner: userId });
+        const userAlbums = await Album.find({"albumId": { owner: userId }});
 
-        const userFiles = []
+        paths = []
 
-        // Extracting all the file path of those albums and push it into array
-        userAlbums.map((album) => {
-            if (album.files.length > 0) album.files.forEach(file => {
-                userFiles.push(file.path);
-            });
-
-        });
-
-        // Delete the files
-        await deleteFiles(userFiles, (err) => {
-            if (err) return res.status(500).send(JSON.stringify('Error while deleting files'));
-        });
+        userAlbums.forEach(
+            (album) => {
+                paths.push('./storage/'+ album._id);
+            }
+        );
 
         // Delete the albums from the db
         await Album.deleteMany({ owner: userId });
 
+        // HERE SHOULD DELETE ANY ALBUM FROM ALBUM OBJECTS AND USER OBJECTS BY CALLING deleteAlbum
+
+
+        
+        // Finally deleting files and directory
+        for(const path of paths) {
+            await fs.rm(path, { recursive:true, force:true}, () => console.log('Directory deletion successfull'));
+        };
+
         // Delete the user from the db
-        await User.deleteOne({ _id: userId });
+        await User.deleteOne({ _id: userId }); 
 
         res.status(200).send(JSON.stringify('User successfully deleted'));
 

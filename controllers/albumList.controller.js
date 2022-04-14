@@ -102,24 +102,31 @@ const deleteAlbum = async (req, res) => {
     const albumId = req.albumId;
     const album = req.album;
 
-    // Fetching the album content
-    const files = await album.files.map(a => a.path);
-    if (!files) return res.status(400).send('Album empty')
-
-    // Deleting the album content
-    await deleteFiles(files, (err) => {
-        if (err) return res.status(500).send('Error while deleting album content');
-    });
-
     try {
+
+        // GET ALL IDS FROM USER USING THIS ALBUM
+        const userIds = [];
+
+        for(const user of req.album.users){
+            userIds.push(user.userId);
+        }
+
+        console.log("Users using this album are " + userIds);
 
         // Removing album from the database and the entry from the users object
         await Album.deleteOne({ _id: albumId });
+        
+        // Removing all occurences of this album in any user
+        for(const id of userIds){
+            await User.updateOne(
+                { _id: id },
+                { $pull: { 'albums': { 'albumId': ObjectId(albumId) } } }
+            );
+        }
 
-        await User.updateOne(
-            { _id: userId },
-            { $pull: { 'albums': { 'albumId': ObjectId(albumId) } } }
-        );
+        // Finally delete the album directory and the files inside
+        var albumPath = './storage/'+albumId;
+        await fs.rm(albumPath, { recursive:true, force:true}, () => console.log('File deletion successfull')); 
 
         return res.status(200).send(JSON.stringify('Deletion successfull'));
     } catch (err) {

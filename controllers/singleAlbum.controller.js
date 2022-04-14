@@ -2,6 +2,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const Album = require('../models/Album.model');
 const User = require('../models/User.model');
 const File = require('../models/File.model');
+const Rights = require('../models/Rights.model');
 const { deleteFiles } = require('../services/storage');
 const ExifImage = require('exif').ExifImage;
 const fs = require('fs');
@@ -190,25 +191,27 @@ const _updateItemMap = (itemMap, file, type, action) => {
 // Takes a userID, an albumID and the requested access as parameters
 const _addUser = async (userId, albumId, requestedRights) => {
 
-    console.log('rights => '+ requestedRights);
     // Checks if the user target ID provided is correct acreates user variable
     const targetUser = await User.findOne({ _id: userId });
-    if (!targetUser) return res.status(400).send(JSON.stringify("Target user ID incorrect"));
+    if (!targetUser) return console.log("Target user ID incorrect");
 
     // Checks if the requested right is valid such as declared in the model
-    if (!requestedRights) return res.status(400).send(JSON.stringify("Request must include requested rights"))
+    if (!requestedRights) return console.log("Request must include requested rights")
+
+    const album = await Album.findOne({_id:albumId});
+
 
     // Checks if the requested rights are in the server defined list
     var validated = true;
-    requestedRights.map(right => {
+    requestedRights.forEach(right => {
         validated = (Rights.includes(right));
     });
-    if (!validated) return res.status(400).send(JSON.stringify("Requested rights are not valid"));
+    if (!validated) return console.log("Requested rights are not valid");
 
     try {
         // Updates entry in user object if exists
         const updateUser = await User.updateOne(
-            { _id: targetUserId, "albums.albumId": albumId },
+            { _id: userId, "albums.albumId": albumId },
             {
                 $set: {
                     "albums.$.title": album.title,
@@ -222,7 +225,7 @@ const _addUser = async (userId, albumId, requestedRights) => {
         const updateAlbum = await Album.updateOne(
             { _id: albumId, "users.userId": userId },
             {
-                $push: {
+                $set: {
                     "users.$.rights": requestedRights
                 }
             }
@@ -233,7 +236,7 @@ const _addUser = async (userId, albumId, requestedRights) => {
         if (updateUser.modifiedCount <= 0) {
 
             await User.updateOne(
-                { _id: targetUserId },
+                { _id: userId },
                 {
                     $push: {
                         "albums": {
@@ -255,6 +258,8 @@ const _addUser = async (userId, albumId, requestedRights) => {
                     $push: {
                         "users": {
                             "userId": userId,
+                            "email": targetUser.email,
+                            "username": targetUser.username ?? "",
                             "rights": requestedRights
                         }
                     }
@@ -272,19 +277,22 @@ const _addUser = async (userId, albumId, requestedRights) => {
 
 // Deletes an user from an album
 // Propagates the change to the user object
-const _deleteUser = async (userID, albumId) => {
+const _deleteUser = async (userId, albumId) => {
     // Checks if the user target ID provided is correct acreates user variable
-    const targetUser = await User.findOne({ _id: userID });
-    console.log("Target user ID incorrect");
+    const targetUser = await User.findOne({ _id: userId });
+    if(!targetUser) return console.log("Target user ID incorrect");
 
     try {
         // Removes entry in user object
         await User.updateOne(
-            { _id: targetUserId},
+            { _id: userId},
             {
-                $pull: 
+                $pull :
                     {
-                        "albums.albumId": albumId 
+                        "albums": 
+                        {
+                           "albumId": albumId
+                        } 
                     }
             }
         );
@@ -295,7 +303,10 @@ const _deleteUser = async (userID, albumId) => {
             {
                 $pull :
                 {
-                    "users.userId": userID 
+                    "users": 
+                    {
+                        "userId": userId
+                    }
                 }
             }
         
@@ -372,7 +383,7 @@ const editAlbum = async (req, res) => {
         // DEBUG MODE FIRST PROPAGATE
         const comparedUsers = await _compareUsers(album.users, newUsers);
 
-        for(const user of comparedUsers.toAdd) _addUser(user.userId, albumId, album, user.rights);
+        for(const user of comparedUsers.toAdd) _addUser(user.userId, albumId, user.rights);
         for(const user of comparedUsers.users) _deleteUser(user.userId, albumId, album);
 
 
