@@ -4,11 +4,11 @@ const Album = require('../models/Album.model');
 const AlbumAccess = require('../models/AlbumAccess.model');
 const UserAccess = require('../models/UserAccess.model');
 const Rights = require('../models/Rights.model');
-const { deleteFiles } = require('../services/storage');
 const fs = require('fs');
 
 // Returns an array with a users albums
 const albumsGet = async (req, res) => {
+
     // Fetches user in db according to id provided by the auth middleware (once token verified)
     const user = await User.findOne({ _id: ObjectId(req.user) });
 
@@ -98,45 +98,52 @@ const createAlbumPost = async (req, res) => {
 // Deletes an album in users albums
 // Takes user ID and album ID from request as middleware appends them once verified
 const deleteAlbum = async (req, res) => {
-    const userId = req.userId;
     const albumId = req.albumId;
-    const album = req.album;
 
     try {
 
-        // GET ALL IDS FROM USER USING THIS ALBUM
-        const userIds = [];
+        await deleteAlbumAndPropagate(req.album);
 
-        for(const user of req.album.users){
-            userIds.push(user.userId);
-        }
-
-        console.log("Users using this album are " + userIds);
-
-        // Removing album from the database and the entry from the users object
-        await Album.deleteOne({ _id: albumId });
-        
-        // Removing all occurences of this album in any user
-        for(const id of userIds){
-            await User.updateOne(
-                { _id: id },
-                { $pull: { 'albums': { 'albumId': ObjectId(albumId) } } }
-            );
-        }
-
-        // Finally delete the album directory and the files inside
-        var albumPath = './storage/'+albumId;
-        await fs.rm(albumPath, { recursive:true, force:true}, () => console.log('File deletion successfull')); 
-
-        return res.status(200).send(JSON.stringify('Deletion successfull'));
+        return res.status(200).send("Album deleted");
     } catch (err) {
 
-        res.status(400).send(err.message);
+        return res.status(400).send(err.message);
     }
+}
+
+// Deletes a single album given an album object and propagates the change
+const deleteAlbumAndPropagate = async (album) => {
+
+    albumId = album._id;
+
+    // GET ALL IDS FROM USER USING THIS ALBUM
+    const userIds = [];
+
+    for(const user of album.users){
+        userIds.push(user.userId);
+    }
+
+    console.log("Users using this album are " + userIds);
+
+    // Removing album from the database and the entry from the users object
+    await Album.deleteOne({ _id: albumId });
+    
+    // Removing all occurences of this album in any user
+    for(const id of userIds){
+        await User.updateOne(
+            { _id: id },
+            { $pull: { 'albums': { 'albumId': ObjectId(albumId) } } }
+        );
+    }
+
+    // Finally delete the album directory and the files inside
+    var albumPath = './storage/'+albumId;
+    await fs.rm(albumPath, { recursive:true, force:true}, () => console.log('File deletion successfull')); 
+
 }
 
 
 
 
 
-module.exports = { albumsGet, createAlbumPost, deleteAlbum }
+module.exports = { albumsGet, createAlbumPost, deleteAlbum, deleteAlbumAndPropagate }

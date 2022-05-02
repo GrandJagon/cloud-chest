@@ -2,7 +2,7 @@ require('dotenv').config({ path: '../.env' });
 const Album = require('../models/Album.model');
 const User = require("../models/User.model");
 const { salt, saltHash } = require('../services/hasher');
-const { deleteAlbum } = require('albumList.controller');
+const { deleteAlbumAndPropagate } = require('./albumList.controller');
 const { randomString } = require('../services/random');
 const mailer = require('../services/mailer');
 const fs = require('fs');
@@ -74,10 +74,12 @@ const editUser = async (req, res) => {
 // User can creates a new one
 const resetPassword = async (req, res) => {
     try {
-   
+        
+        console.log(req.body);
+        
         var user = await User.findOne({ email: req.body.email });
 
-        if(user.length < 1) return res.status(400).send(JSON.stringify("User does not exists"));
+        if(!user) return res.status(400).send(JSON.stringify("User does not exists"));
 
         const tempPassword = randomString(12);
 
@@ -101,6 +103,7 @@ const resetPassword = async (req, res) => {
         return res.status(200).send(JSON.stringify("Password reset successful"));
   
     } catch(err){
+        console.log(err);
         return res.status(500).send(err.message);
     }
 
@@ -159,13 +162,8 @@ const deleteUser = async (req, res) => {
         // Delete the albums from the db
         await Album.deleteMany({ owner: userId });
 
-        // HERE SHOULD DELETE ANY ALBUM FROM ALBUM OBJECTS AND USER OBJECTS BY CALLING deleteAlbum
-
-
-        
-        // Finally deleting files and directory
-        for(const path of paths) {
-            await fs.rm(path, { recursive:true, force:true}, () => console.log('Directory deletion successfull'));
+        for(const album of userAlbums) {
+            deleteAlbumAndPropagate(album);
         };
 
         // Delete the user from the db
