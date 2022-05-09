@@ -6,6 +6,7 @@ const { deleteAlbumAndPropagate } = require('./albumList.controller');
 const { randomString } = require('../services/random');
 const mailer = require('../services/mailer');
 const fs = require('fs');
+const { getDateTime } = require('../services/datetime.js');
 
 // Edits a user profile
 const editUser = async (req, res) => {
@@ -65,6 +66,7 @@ const editUser = async (req, res) => {
         res.status('200').send(JSON.stringify('Update succesfull'));
 
     } catch (err) {
+        console.log(getDateTime() + ' User edit error => '+err);
         return res.status(500).send(err.message);
     }
 
@@ -103,7 +105,7 @@ const resetPassword = async (req, res) => {
         return res.status(200).send(JSON.stringify("Password reset successful"));
   
     } catch(err){
-        console.log(err);
+        console.log(getDateTime() + ' Password reset error => '+err);
         return res.status(500).send(err.message);
     }
 
@@ -123,6 +125,7 @@ const findUser = async (req, res) => {
         return res.status(404).send(null);
 
     } catch(err){
+        console.log(getDateTime() + ' User search error => '+err);
         return res.status(500).send(err.message);
     }
 }
@@ -138,6 +141,7 @@ const findUserById = async (req, res) => {
         return res.status(404).send(null);
 
     } catch(err){
+        console.log(getDateTime() + ' User search by id error => '+err);
         return res.status(500).send(err.message);
     }
 }
@@ -172,6 +176,7 @@ const deleteUser = async (req, res) => {
         res.status(200).send(JSON.stringify('User successfully deleted'));
 
     } catch (err) {
+        console.log(getDateTime() + ' User deletion error => '+err);
         res.status(500).send(err.message)
     }
 }

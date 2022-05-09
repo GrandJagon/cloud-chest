@@ -11,8 +11,7 @@ const storage = multer.diskStorage({
         const filename = file.originalname + Date.now().toString();
 
         const filehash = hash(filename, 'md5');
-        console.log(path.extname(filehash));
-
+        
         cb(null, filehash + path.extname(file.originalname));
     },
 });

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { getDateTime } = require('./datetime.js');
 
 class Config{
     static config;
@@ -10,7 +11,7 @@ class Config{
      _init() {
         let data = fs.readFileSync('./config.json');
         this.config = JSON.parse(data);
-        console.log("Config file initiated with new members allowed : " + this.getValue('enableSignup'));
+        console.log(getDateTime() + "  Config file initiated with new members allowed : " + this.getValue('enableSignup'));
     } 
 
     getConfig = () => {

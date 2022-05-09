@@ -1,0 +1,20 @@
+
+> cloud-chest-server@1.0.0 start
+> node index.js
+
+Config file initiated with new members allowed : true
+Initiating redis connection
+Initiating database connection
+Initiating mailing service
+/home/lucas/Documents/Dev/cloud-chest-server/index.js:57
+for(var func in window)
+                ^
+
+ReferenceError: window is not defined
+    at Object.<anonymous> (/home/lucas/Documents/Dev/cloud-chest-server/index.js:57:17)
+    at Module._compile (node:internal/modules/cjs/loader:1101:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1153:10)
+    at Module.load (node:internal/modules/cjs/loader:981:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:81:12)
+    at node:internal/main/run_main_module:17:47

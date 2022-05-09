@@ -1,5 +1,6 @@
 const { verifyAccessToken } = require('../services/tokens');
 const User = require('../models/User.model');
+const { getDateTime } = require('../services/datetime.js');
 
 // Middleware function to check if a user is authenticated before giving access to resources
 const checkAuth = async (req, res, next) => {
@@ -25,6 +26,7 @@ const checkAuth = async (req, res, next) => {
 
         next();
     } catch (err) {
+        console.log(getDateTime() + ' Auth checking error => '+err);
         return res.status(400).send(err.message);
     }
 }

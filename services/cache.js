@@ -1,4 +1,5 @@
 require("dotenv").config({ path: '../.env' });
+const { getDateTime } = require('./datetime.js');
 const redis = require('redis');
 
 // Class that will handle the cache
@@ -9,18 +10,18 @@ class RedisCache {
 
     // Called at construction time, connect to the redis client
     async _connect() {
-        console.log('Initiating redis connection');
+        console.log(getDateTime() + ' Initiating redis connection');
 
         try {
             this.client = redis.createClient();
 
             this.client.on('connect', () => {
-                console.log('Successfully connected to redis database');
+                console.log(getDateTime() + ' Successfully connected to redis database');
             });
 
             await this.client.connect();
         } catch (err) {
-            console.log(err);
+            console.log(getDateTime() + ' Cache connection error => '+err);
         }
     }
 
@@ -31,7 +32,7 @@ class RedisCache {
             result = result.replaceAll('"', '');
             return result;
         } catch (err) {
-            console.log(err);
+            console.log(getDateTime() + ' Cache retrieval error => '+err);
         }
     }
 
@@ -40,7 +41,7 @@ class RedisCache {
         try {
             await this.client.set(key, data);
         } catch (err) {
-            console.log(err);
+            console.log(getDateTime() + ' Cache adding error => '+err);
         }
     }
 }

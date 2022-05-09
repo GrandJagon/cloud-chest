@@ -5,6 +5,7 @@ const AlbumAccess = require('../models/AlbumAccess.model');
 const UserAccess = require('../models/UserAccess.model');
 const Rights = require('../models/Rights.model');
 const fs = require('fs');
+const { getDateTime } = require('../services/datetime.js');
 
 // Returns an array with a users albums
 const albumsGet = async (req, res) => {
@@ -23,6 +24,7 @@ const albumsGet = async (req, res) => {
         return res.status(200).send(userAlbums);
 
     } catch (err) {
+        console.log(getDateTime() + ' Albums retrieval error => '+err);  
         return res.status(500).send(err.message);
     }
 }
@@ -81,15 +83,14 @@ const createAlbumPost = async (req, res) => {
         // Finally creating the folder dedicated to the album
         await fs.promises.mkdir(albumPath, { recursive: true }, function(err){
             if(err){
-                console.log('Failed to create '+albumPath);
-                throw err;
+                throw Error('Failed to create album directory : '+err);
             }
         });
 
         return res.status(200).send({ 'albumId': newAlbum._id, 'title': albumTitle, 'rights':['admin']});
 
     } catch (err) {
-        console.log(err);
+        console.log(getDateTime() + ' Album creation error => '+err);  
         res.status(500).send(err.message);
     }
 }
@@ -106,7 +107,7 @@ const deleteAlbum = async (req, res) => {
 
         return res.status(200).send("Album deleted");
     } catch (err) {
-
+        console.log(getDateTime() + ' Album deletion error => '+err);  
         return res.status(400).send(err.message);
     }
 }
@@ -122,8 +123,6 @@ const deleteAlbumAndPropagate = async (album) => {
     for(const user of album.users){
         userIds.push(user.userId);
     }
-
-    console.log("Users using this album are " + userIds);
 
     // Removing album from the database and the entry from the users object
     await Album.deleteOne({ _id: albumId });

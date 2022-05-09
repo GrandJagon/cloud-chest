@@ -6,6 +6,7 @@ const Rights = require('../models/Rights.model');
 const { deleteFiles } = require('../services/storage');
 const ExifImage = require('exif').ExifImage;
 const fs = require('fs');
+const { getDateTime } = require('../services/datetime.js');
 
 // Request the content of album, returns list of file path
 // Takes user ID and album ID from request as middleware appends them once verified
@@ -15,8 +16,8 @@ const getSingleAlbum = async (req, res) => {
 
     try {
         return res.status(200).send(album);
-
     } catch (err) {
+        console.log(getDateTime() + ' Singe album retrieval error => '+err);
         return res.status(500).send(err.message);
     }
 }
@@ -82,8 +83,7 @@ const writeContent = async (req, res) => {
         return res.status(200).send(newFiles);
 
     } catch (err) {
-        console.log(err.stack);
-
+        console.log(getDateTime() + ' Content writing error => '+err);
         return res.status(400).send(err.message);
     }
 }
@@ -132,6 +132,7 @@ const deleteContent = async (req, res) => {
             itemMap = _updateItemMap(itemMap, file, 'remove');
         });
     } catch (err) {
+        console.log(getDateTime() + ' Content deletion update error => '+err);
         return res.status(400).send(JSON.stringify('Error while extracting files to delete from request => ' + err.stack));
     }
 
@@ -162,7 +163,7 @@ const deleteContent = async (req, res) => {
         return res.status(200).send(JSON.stringify("Deletion of " + files.length + " items successfull"));
 
     } catch (err) {
-        console.log(err);
+        console.log(getDateTime() + ' File deletion error => '+err);
         return res.status(500).send(err.message);
     }
 }
@@ -266,9 +267,6 @@ const _addUser = async (userId, albumId, requestedRights) => {
                 }
             )
         }
-
-        console.log('Access sucessfully added to album '+albumId+ ' for user '+userId);
-
     } catch (err) {
         throw err;
     }
@@ -416,7 +414,7 @@ const editAlbum = async (req, res) => {
 
 
     } catch (err) {
-        console.log(err.stack);
+        console.log(getDateTime() + ' Singe album edit error => '+err);
         return res.status(500).send(err.messages);
     }
 

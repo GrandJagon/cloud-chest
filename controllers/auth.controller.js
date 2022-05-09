@@ -4,7 +4,7 @@ const User = require('../models/User.model');
 const { loginValidation, registerValidation, refreshTokenValidation } = require('../validation');
 const { compare } = require('../services/hasher');
 const { TokenType, signedToken, verifyAccessToken, verifyRefreshToken } = require('../services/tokens');
-
+const { getDateTime } = require('../services/datetime.js');
 const { salt, saltHash } = require('../services/hasher');
 const Cache = require('../services/cache');
 
@@ -58,7 +58,7 @@ const registerPost = async (req, res) => {
         return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, userId: user._id.toString() });
 
     } catch (err) {
-        console.log(err.stack);
+        console.log(getDateTime() + ' Registration error => '+err);
         res.status(500).send(err.message);
     }
 };
@@ -87,6 +87,7 @@ const loginPost = async (req, res) => {
 
         return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, userId : user._id.toString() });
     } catch (err) {
+        console.log(getDateTime() + ' Login error => '+err);
         res.status(400).send(err.message);
     }
 
@@ -116,7 +117,7 @@ const refreshTokenPost = async (req, res) => {
 
         res.status(200).json({ accessToken: newAccessToken });
     } catch (error) {
-        consle.log(error);
+        console.log(getDateTime() + ' Token refreshing error => '+err);
         res.status(500).send(error.message);
     }
 };

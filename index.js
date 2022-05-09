@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const process = require('process');
 const {log} = require('./middlewares/log.middleware');
 const  { enableSignup, disableSignup } = require('./controllers/auth.controller');
+const { getDateTime } = require('./services/datetime.js');
 
 // Assigning name to process in order to retrieve it in case use from ssh
 process.title = 'cloud-chest';
@@ -50,16 +51,21 @@ app.use('/users', userRoute);
 app.use('/storage', storageRoute);
 app.use('/storage', express.static('storage'));
 
+// Forbiding app to exit on exception and make it log
+process.on('uncaughtException', function(err) {   
+    return console.log(getDateTime() + ' '+err);
+    
+});
+
 var httpsServer = https.createServer(options, app);
 
 // Starting listening to port provided 
 httpsServer.listen(process.env.PORT, ()=>{
-    console.log('Server up and listening to port '+process.env.PORT);
-    console.log('Process ID is '+ process.pid);
-    console.log('Process name is '+ process.title);
+    console.log(getDateTime() + ' Server up and listening to port '+process.env.PORT);
+    console.log(getDateTime() + ' Process ID is '+ process.pid);
+    console.log(getDateTime() + ' Process name is '+ process.title);
 });
-
-    
+   
 // Basic console to enter command
 var readline = require('readline');
 

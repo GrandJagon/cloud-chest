@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 
+
 // Generates random salt with nb hex characters (<=32)
 const salt = nb => {
     if (typeof nb !== 'number') throw new Error('Parameter must be a number');
@@ -25,10 +26,10 @@ const _saltHasher = (str, salt) => {
 
 // Function that wraps hashing with input validation
 const saltHash = (str, salt) => {
-    if (str == null || salt == null) throw new Error('Both inputs are required are required');
+    if (str == null || salt == null) throw new Error('SaltHashError : Both inputs are required');
 
     if (typeof str !== 'string' || typeof salt !== 'string') {
-        throw new Error('Both inputs must be of type string');
+        throw new Error('SaltHashError:Both inputs must be of type string');
     }
 
     return _saltHasher(str, salt);
