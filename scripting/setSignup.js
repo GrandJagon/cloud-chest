@@ -1,12 +1,19 @@
 #!/usr/bin/env node
-require('./services/config');
+require('../services/config');
 
 // Grab provided args
-const args = process.argv.slice(2);
+const args = process.argv.slice(3);
+
+console.log(args)
 
 
 if(args.length > 1){
-    console.log('Arugment must be true or false');
+    console.log('Argument must be true or false');
+    return;
+}
+
+if(args.length == 0){
+    console.log('New members signup is currently set to ' + serverConfig.getValue('enableSignup'));
     return;
 }
 

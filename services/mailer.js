@@ -1,6 +1,7 @@
 require('dotenv').config({ path: '../.env' });
 const nodemailer = require('nodemailer');
 const { getDateTime } = require('./datetime.js');
+require('../services/config');
 
 
 
@@ -15,8 +16,8 @@ class Mailer{
         console.log(getDateTime() + ' Initiating mailing service');
 
         this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT,
+            host: serverConfig().getValue('smtpHost'),
+            port: serverConfig().getValue('smtpPort'),
             auth: {   
                 user: process.env.SMTP_USERNAME,
                 pass: process.env.SMTP_PASSWORD,

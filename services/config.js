@@ -9,9 +9,8 @@ class Config{
     }
 
      _init() {
-        let data = fs.readFileSync('./config.json');
+        let data = fs.readFileSync('../config.json');
         this.config = JSON.parse(data);
-        console.log(getDateTime() + "  Config file initiated with new members allowed : " + this.getValue('enableSignup'));
     } 
 
     getConfig = () => {
@@ -28,7 +27,7 @@ class Config{
 
     saveConfig = () => {
         let data = JSON.stringify(this.config);
-        fs.writeFileSync('./config.json', data);
+        fs.writeFileSync('../config.json', data);
     }
 
 }

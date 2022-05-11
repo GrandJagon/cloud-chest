@@ -6,7 +6,10 @@ then
     sh ./status.sh
 elif [ "$1" == "signup" ]
 then
-    sh ./signup.sh
+    sh ./signup.sh "$@"
+elif [ "$1" == "smtp" ]
+then
+    sh ./smtp.sh "$@"
 elif [ "$1" == "reboot" ]
 then
     sh ./reboot.sh
@@ -17,6 +20,6 @@ elif [ "$1" == "stop" ]
 then
     sh ./stop.sh
 else
-    echo "Allowed parameters are : status, signup, reboot, start or stop"
+    echo "Allowed parameters are : status, signup, smtp, reboot, start or stop"
 fi
 
